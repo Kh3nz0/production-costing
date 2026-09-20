@@ -5,13 +5,23 @@ import { useRouter } from 'next/navigation';
 import { completeRun } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
-import { formatQuantity, toDecimal } from '@/lib/decimal';
+import { formatCalculationAmount, formatQuantity, toDecimal } from '@/lib/decimal';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
   'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
 const TH = 'px-4 py-3 text-left text-caption font-medium text-text-secondary';
 const TD = 'px-4 py-3 text-body-sm text-text-primary';
+
+/**
+ * Postgres hands back `numeric(20,6)` as `251.160000`, and the Expected column
+ * beside it reads `251.16 g`. The same number spelled two ways on one row reads
+ * as two numbers. The value is untouched: only its trailing zeros go.
+ */
+function trimZeros(value: string | null): string {
+  if (value === null || value === '') return '';
+  return toDecimal(value).toString();
+}
 
 interface DraftLine {
   id: string;
@@ -45,7 +55,9 @@ export function RecordRunForm({
   const router = useRouter();
   const [state, action, pending] = useActionState(completeRun, {});
   const [actual, setActual] = useState<Record<string, string>>(() =>
-    Object.fromEntries(lines.map((line) => [line.id, line.actual_qty ?? line.expected_qty ?? ''])),
+    Object.fromEntries(
+      lines.map((line) => [line.id, trimZeros(line.actual_qty ?? line.expected_qty)]),
+    ),
   );
   const [accepted, setAccepted] = useState('');
   const [failed, setFailed] = useState('');
@@ -248,8 +260,8 @@ export function RecordRunForm({
         </p>
         {estimate !== null ? (
           <p className="text-body-sm mt-3 text-text-secondary">
-            The recipe estimated {toDecimal(estimate).toFixed(4)} per unit. The run will be reported
-            against that.
+            The recipe estimated {formatCalculationAmount(estimate)} per unit. The run will be
+            reported against that.
           </p>
         ) : null}
         <Field label="Notes" name="notes" />
