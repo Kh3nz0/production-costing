@@ -9,6 +9,17 @@ const config = [
   ...nextTypescript,
   {
     files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.ts'],
+    rules: {
+      // S14: error logs must contain no costs, prices or margins. The reliable
+      // way to keep that true is to have no application logging at all rather
+      // than to review each call for figures. Errors reach the person through
+      // the screen, where the amount is the point; a test may log freely.
+      'no-console': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
     rules: {
       // D-079 / F-50. Request PostgREST numeric columns as text so the SDK never
       // parses them as JS floats. Preserve that text through decimal.js; the
