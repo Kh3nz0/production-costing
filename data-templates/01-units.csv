@@ -1,0 +1,15 @@
+unit_code,unit_name,dimension,is_base_unit_for_dimension,factor_to_base_unit,notes
+g,Gram,mass,yes,1,
+kg,Kilogram,mass,no,1000,1 kg = 1000 g
+pc,Piece,count,yes,1,
+pack,Pack,count,no,,Factor differs per item - set on the item row not here
+ml,Millilitre,volume,yes,1,
+L,Litre,volume,no,1000,
+mm,Millimetre,length,yes,1,
+cm,Centimetre,length,no,10,
+m,Metre,length,no,1000,
+sheet,Sheet,count,no,1,
+roll,Roll,count,no,,Factor differs per item
+min,Minute,time,yes,1,
+hr,Hour,time,no,60,
+kWh,Kilowatt-hour,energy,yes,1,

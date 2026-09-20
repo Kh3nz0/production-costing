@@ -1,0 +1,14 @@
+activity_name,hourly_rate,default_duration,duration_unit,attended,status,notes
+Product design,,,min,yes,active,"attended = your hands are occupied. Set no for unattended machine watching"
+Customer customization,,,min,yes,active,
+Print preparation,,,min,yes,active,
+Machine setup,,,min,yes,active,
+Material loading,,,min,yes,active,
+Machine monitoring,,,min,no,active,"Unattended - should not be charged as full direct labour"
+Support removal,,,min,yes,active,
+Sanding,,,min,yes,active,
+Finishing,,,min,yes,active,
+Assembly,,,min,yes,active,
+Quality checking,,,min,yes,active,
+Packing,,,min,yes,active,
+Cleanup,,,min,yes,active,

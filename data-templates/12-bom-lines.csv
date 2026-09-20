@@ -1,0 +1,8 @@
+product_name,variant_name,line_type,item_or_activity_or_equipment,quantity_per_unit,unit,expected_waste_percent,notes
+Clickable Keychain,3-switch,material,PLA Basic Filament,,g,,"EXAMPLE - grams from Bambu Studio for one unit"
+Clickable Keychain,3-switch,component,Mechanical Switch,3,pc,,
+Clickable Keychain,3-switch,component,Key Ring,1,pc,,
+Clickable Keychain,3-switch,packaging,Plastic Bag,1,pc,,
+Clickable Keychain,3-switch,machine_time,Bambu Lab P2S,,min,,"Print minutes per unit from Bambu Studio"
+Clickable Keychain,3-switch,labour,Assembly,,min,,
+Clickable Keychain,3-switch,labour,Packing,,min,,

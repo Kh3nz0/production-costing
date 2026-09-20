@@ -1,0 +1,252 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Generated from the Figma file's `Tokens` collection
+   (vHvJDjDOhZQWysnl02Sxth, mode "Light"). Figma variable -> Tailwind key ->
+   CSS property is documented in docs/phase8-handoff.md section 3.
+   Do not invent a value here that does not exist in Figma.
+   --------------------------------------------------------------------------- */
+
+@theme {
+  /* Type families. next/font sets --font-geist-sans and --font-geist-mono on
+     <html>; these map them onto the Tailwind keys the utilities read. Without
+     this the interface silently falls back to the system stack and the type
+     stops matching Figma. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Surfaces */
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f6f8fb;
+  --color-surface-accent: #eef3fe;
+
+  /* Text */
+  --color-text-primary: #0b1020;
+  --color-text-secondary: #4f5a70;
+  --color-text-tertiary: #6b7689;
+  --color-text-inverse: #ffffff;
+
+  /* Lines. border-strong is the only visible decorative border (D-091).
+     --color-border is the fill of a disabled control, never an edge. */
+  --color-border: #edf0f6;
+  --color-border-strong: #e3e8f0;
+  --color-border-control: #7e8ba3;
+  --color-border-focus: #1552f0;
+
+  /* Accent */
+  --color-accent: #1552f0;
+  --color-accent-hover: #1240c8;
+  --color-accent-pressed: #0e32a6;
+  --color-accent-subtle: #eef3fe;
+  --color-accent-text: #1039b8;
+
+  /* Status. The -fill variants are for fills, dots, icons and chart marks
+     only: each is below 4.5:1 and fails as small text. */
+  --color-success: #1a7f4b;
+  --color-success-fill: #30a46c;
+  --color-success-subtle: #e9f7ef;
+  --color-warning: #c2410c;
+  --color-warning-fill: #f76b15;
+  --color-warning-subtle: #fef1e7;
+  --color-danger: #c62a2f;
+  --color-danger-fill: #e5484d;
+  --color-danger-hover: #a82026;
+  --color-danger-subtle: #fdecec;
+
+  /* Values. Deliberately separate from status: a negative margin is
+     information, not an error. Never alias these to success/danger (D-091). */
+  --color-positive-value: #1a7f4b;
+  --color-negative-value: #c62a2f;
+
+  /* Charts. One blue ramp plus two reserved semantics (D-092, D-093).
+     chart-3 and chart-4 fall below 3:1 on white, so their marks carry a
+     1px border-strong stroke and neither is used for a thin line series. */
+  --color-chart-1: #0e32a6;
+  --color-chart-2: #1552f0;
+  --color-chart-3: #7397f6;
+  --color-chart-4: #b4c8fa;
+  --color-chart-5: #c62a2f;
+  --color-chart-6: #6e7d93;
+
+  /* Brand. Wordmark and brand surfaces only. Never an action, link or
+     focus colour (D-074). */
+  --color-brand-bloop: #980b2d;
+  --color-brand-bloop-deep: #7c0724;
+  --color-brand-bloop-subtle: #f8e7eb;
+
+  /* Space. The Figma scale is not linear: space-6 is 24 and space-7 is 32. */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 32px;
+  --spacing-8: 40px;
+  --spacing-9: 48px;
+  --spacing-10: 64px;
+  --spacing-11: 80px;
+  --spacing-12: 96px;
+
+  /* Control heights.
+     These exist because the Figma space scale is not linear and therefore
+     collides with Tailwind's numeric utilities: --spacing-9 is 48px here, so
+     `h-9` is 48px rather than the 36px a medium button wants, and `h-10` is
+     64px rather than the 40px a field wants. Spacing tokens are for layout; a
+     control's height is its own dimension and gets its own name. */
+  --spacing-control-sm: 32px;
+  --spacing-control-md: 36px;
+  --spacing-control-lg: 44px;
+  --spacing-field: 40px;
+
+  /* Named sizes from Figma's `size/*` variables */
+  --spacing-icon-sm: 16px;
+  --spacing-icon-md: 20px;
+  --spacing-icon-lg: 24px;
+  --spacing-sidebar: 240px;
+  --spacing-rail: 64px;
+  --spacing-content-max: 1280px;
+  --spacing-touch-min: 44px;
+
+  /* Radius */
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
+
+  /* Elevation. There is no mid-range drop shadow in this system: structure
+     comes from borders. Do not add shadow-sm or shadow-md anywhere. */
+  --shadow-card: 0 12px 32px rgb(11 16 32 / 0.06);
+  --shadow-overlay: 0 20px 48px rgb(11 16 32 / 0.12);
+  --shadow-accent-glow: 0 14px 32px rgb(21 82 240 / 0.24), inset 0 1px 0 rgb(255 255 255 / 0.28);
+
+  /* Motion */
+  --ease-panel: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Type scale. Each utility is one Figma text style, size / line-height /
+   weight / tracking together, so a size can never be used with the wrong
+   leading. Values from the file's local text styles.
+   --------------------------------------------------------------------------- */
+
+@utility text-micro {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@utility text-caption {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+@utility text-body-sm {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+@utility text-body {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+@utility text-body-lg {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+@utility text-heading-sm {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+@utility text-heading {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+@utility text-title {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+@utility text-value-sm {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@utility text-value {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+@utility text-value-lg {
+  font-size: 32px;
+  line-height: 38px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+@utility text-mono-sm {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mandatory on every money figure, quantity, percentage and date. Without it
+   a column of pesos shifts horizontally as digits change, and this interface
+   is mostly columns of pesos. */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Focus is never removed. 2px ring, 2px offset, on every interactive
+     element, per docs/phase8-handoff.md section 9. */
+  :focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

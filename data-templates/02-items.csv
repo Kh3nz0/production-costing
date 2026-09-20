@@ -1,0 +1,14 @@
+name,sku,item_type,category,brand,variant_attributes,colour,base_unit,purchase_unit,purchase_to_base_factor,reorder_point_base_unit,preferred_supplier,supplier_lead_time_days,notes
+PLA Basic Filament,,raw_material,Filament,Bambu Lab,1 kg spool,Black,g,spool,1000,,,,EXAMPLE ROW - delete before import
+PETG Filament,,raw_material,Filament,,1 kg spool,,g,spool,1000,,,,
+Mechanical Switch,,purchased_component,Switches,,linear / tactile / clicky,,pc,pack,,,,,Set pack factor to the real pieces per pack
+Blank Keycap,,purchased_component,Keycaps,,profile,,pc,pack,,,,,
+Key Ring,,purchased_component,Hardware,,size,,pc,pack,,,,,
+Jump Ring,,purchased_component,Hardware,,size,,pc,pack,,,,,
+Ball Chain,,raw_material,Hardware,,,,mm,m,1000,,,,Consumed in cm - enter length in mm
+Magnet,,purchased_component,Hardware,,size,,pc,pack,,,,,
+Adhesive,,consumable,Consumables,,,,ml,bottle,,,,,
+Product Card,,packaging,Packaging,,,,pc,pack,,,,,
+Plastic Bag,,packaging,Packaging,,size,,pc,pack,,,,,
+Box,,packaging,Packaging,,size,,pc,pack,,,,,
+Label,,packaging,Packaging,,size,,pc,sheet,,,,,

@@ -1,0 +1,7 @@
+product_name,sku,category,variant_name,expected_output_quantity_per_run,expected_failure_rate_percent,target_margin_percent,minimum_margin_percent,packaging_item,status,notes
+Clickable Keychain,,Keychains,3-switch,,,,,,active,"EXAMPLE - one row per variant"
+Clickable Keychain,,Keychains,4-switch,,,,,,active,
+Clickable Keychain,,Keychains,5-switch,,,,,,active,
+Clickable Keychain,,Keychains,6-switch,,,,,,active,
+Regular Keychain,,Keychains,,,,,,,active,
+Keycap,,Keycaps,,,,,,,active,

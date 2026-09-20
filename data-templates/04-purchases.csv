@@ -1,0 +1,2 @@
+purchase_ref,supplier_name,purchase_date,supplier_shipping_amount,discount_amount,duties_amount,other_landed_cost_amount,landed_cost_allocation_base,vat_treatment,vat_amount,payment_status,receipt_file_name,notes
+,,,,,,,value,inclusive_non_recoverable,,,,"allocation_base options: value | quantity | weight"

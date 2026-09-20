@@ -1,0 +1,2 @@
+utility_type,rate_per_unit,unit,effective_from,source_or_bill_reference,notes
+electricity,,kWh,,"Meralco bill month","Use the total bill divided by total kWh, not just the generation charge"

@@ -1,0 +1,2 @@
+equipment_name,category,purchase_price,purchase_date,expected_useful_life_years,cost_recovery_period_months,expected_productive_hours_in_recovery_period,rated_power_watts,measured_average_power_watts,annual_maintenance_allowance,annual_repair_allowance,status,notes
+Bambu Lab P2S,3D Printer,,,,,,,,,,active,"EXAMPLE ROW - fill in your real figures. Productive hours drives the hourly recovery rate"

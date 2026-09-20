@@ -1,0 +1,152 @@
+# Phase 7 — Build Status and Visual QA
+
+File: `vHvJDjDOhZQWysnl02Sxth` · https://www.figma.com/design/vHvJDjDOhZQWysnl02Sxth/
+Last updated: 2026-09-19 · Status: **the approved ~70-frame cut is complete**
+
+---
+
+## 1. What is in the file
+
+| Page                     | Contents                                                                                                                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `00 — Cover`             | Title, metadata, sample-data notice, contents index                                                                                                                              |
+| `01 — Foundations`       | 67 variables, 12 type styles, 3 effect styles, colour swatches with measured ratios, live type specimen, space and radius scale, elevation, grid, 15-row contrast evidence table |
+| `02 — Components`        | **23 component sets**, all states                                                                                                                                                |
+| `03 — Desktop`           | **45 screens at 1440**                                                                                                                                                           |
+| `04 — Tablet`            | **14 screens at 768**                                                                                                                                                            |
+| `05 — Mobile`            | **14 screens at 390**                                                                                                                                                            |
+| `06 — Flows`             | Six workflow diagrams and the eighteen click paths                                                                                                                               |
+| `07 — Prototype`         | Starting points, wired connections, transition rules, and what is deliberately not wired                                                                                         |
+| `08 — Developer Handoff` | Colour token map, type style map, component map, responsive rules, build status, owner revisions                                                                                 |
+| `99 — Archive`           | Empty                                                                                                                                                                            |
+
+**73 screen frames and 23 component sets.** This completes the ~70-frame cut the owner approved on 19 September (D-075): 14 Tier-1 screens at all three widths, setup and reference desktop-only, one report template with three exemplars.
+
+### Components (23)
+
+Button (24 variants) · Input (6) · Badge (6) · Status badge (20) · Select (6) · Checkbox (5) · Radio (5) · Switch (4) · Tab (4) · Toast (4) · Skeleton (3) · Table row (3) · Pagination · File upload (4) · Dialog (2) · Empty state (4) · Stat card (3) · Cost breakdown row (5) · Margin and markup pair · Production loss callout · Missing input flag · Chart (bar) · Sidebar · Sidebar rail · Mobile tab bar
+
+### Desktop screens (45)
+
+Sign in · Forgot password · Not found · Onboarding steps 1, 2, 3, 4, 5, 6 · Dashboard · Items · New item · Inventory on hand · Inventory movements · Inventory valuation · Adjust stock · Purchases · New purchase with allocation preview · Receive purchase · Suppliers · Products · New product · Product Recipe · Product Cost · Product Pricing · Production runs · Start a run · Run output · Run review · Sales · Record a sale · Sale detail · Reports index · Estimate-versus-actual report · Sales-profitability report · Failures-and-waste report · CSV import dry run · Settings Business · Settings Equipment · Settings Labour · Settings Overhead · Settings Sales channels · Settings Export and backup · Settings People · Permission denied
+
+### Tablet (14) and mobile (14)
+
+Both widths now cover the full Tier-1 set: Sign in · Dashboard · Items · Inventory · Inventory movements · Purchases · New purchase · Products · Product Cost · Product Pricing · Production · Run output · Sales · Record a sale
+
+### Prototype
+
+Seven flow starting points and 138 wired connections on the Desktop page, including sidebar navigation from every screen.
+
+---
+
+## 2. Owner revisions, 19 September 2026
+
+**Borders too thick.** Every stroke outside a focus ring is now 1px. The divider token was also lightened from `#C9D2E0` to `#D5DCE8`, because perceived weight came from the line's darkness as much as its width. Focus rings stay at 2px: below that a focus indicator stops being visible, which is an accessibility requirement rather than a style choice. D-072.
+
+**Brown rejected.** The warning colour was `#8A5200` — a dark amber that reads brown at every size, and the colour behind every Low badge, every warning message and the production-loss callout. It is now `#C2410C`, a true orange at 5.18:1 on white. The gold chart value `#D9A441` went with it, replaced by `#E58FB0`; that also improved greyscale separation between chart/2 and chart/3 from 1.75:1 to 2.09:1. D-071.
+
+Both changes propagated to every screen automatically, because every colour in the file is a bound variable rather than a pasted hex. Four variable edits changed 45 screens. The Foundations swatch labels, the contrast evidence table and the handoff token map were then corrected by hand so the recorded values stay truthful.
+
+---
+
+## 3. Visual QA results
+
+Script audit across all ten pages, 7,000+ nodes.
+
+| Check                                                                                                          | Result                                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Every colour bound to a variable, no raw hex in fills or strokes                                               | **0 violations**                                                                                                       |
+| Every text node uses a text style                                                                              | **0 violations**                                                                                                       |
+| Banned colours: the eGov flag palette `#1452f0` `#e5484d` `#fcd116`, plus the rejected `#8A5200` and `#D9A441` | **0 occurrences**                                                                                                      |
+| Text overflowing its container                                                                                 | **0**                                                                                                                  |
+| Horizontal overflow at 390 and 768                                                                             | **0 children wider than the frame on any screen**                                                                      |
+| Borders above 1px outside focus rings                                                                          | **0**                                                                                                                  |
+| Touch targets under 44px on mobile                                                                             | **0**                                                                                                                  |
+| Truncated uppercase column headers                                                                             | **0**                                                                                                                  |
+| Terminology against the D-049 vocabulary                                                                       | **0 violations**. Three apparent hits are the denied terms themselves: "not net profit", "not a depreciation schedule" |
+| Auto layout throughout, no absolute positioning inside containers                                              | Pass                                                                                                                   |
+| Instances rather than copies                                                                                   | Pass — 70+ instances on Desktop alone, all resolving to main components                                                |
+| Large monetary values do not clip                                                                              | Pass — ₱1,234,567.89 renders in the specimen and in table columns                                                      |
+| Empty values render as an em dash, never a zero                                                                | Pass — 11 em dashes in use                                                                                             |
+| Tabular figures on money columns                                                                               | Pass                                                                                                                   |
+| Cost breakdown arithmetic reconciles on screen                                                                 | Pass — 23.2436 + 27.9303 + 1.2000 + 4.2000 + 0.4813 + 19.5000 + 4.0292 = 80.5844 → ₱80.58, plus ₱12.35 = ₱92.93        |
+
+---
+
+## 4. Defects found and fixed during the build
+
+| #    | Defect                                                                                                                                   | Fix                                                                              |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| F-01 | Input variants overlapped: `resize()` had reset their sizing mode to FIXED, leaving a 10px component with overflowing children           | Restored vertical hug on all six                                                 |
+| F-02 | Dashboard frame clipped its own content                                                                                                  | Content column hugs, frame counter-axis auto                                     |
+| F-03 | List rows pushed badges and values out of the card — a flexible spacer let the label grow without limit                                  | Replaced with a filling, truncating label. 17 rows                               |
+| F-04 | Pricing channel table clipped by the aside; both break-even columns invisible                                                            | Moved to full content width, 7 columns rebalanced                                |
+| F-05 | Movements table truncated Source to "Run O…"                                                                                             | 8 columns rebalanced                                                             |
+| F-06 | **Button component roots carried an unbound white fill.** Ghost buttons would have rendered as opaque white blocks on any tinted surface | Cleared fills on all 24 variant roots                                            |
+| F-07 | Mobile tab bar clipped to 30px, hiding every label                                                                                       | Stale fixed height; restored hug to 83px                                         |
+| F-08 | Mobile stat value overflowed its carousel card                                                                                           | Fixed-width 268px cards, row clips, which also makes the swipe affordance honest |
+| F-09 | **Mobile Save sale button was 36px, below the 44px touch floor (NFR-07)**                                                                | Raised to 44px, set to fill width                                                |
+| F-10 | Sample data contradicted itself: dashboard said equipment and overhead were unset while the cost breakdown used both                     | Banner reworded to an incomplete-product warning                                 |
+| F-11 | Status badge set was missing `Paid`, `Unpaid`, `Fulfilled`, `Partially received` — all required by the approved content                  | Added; 20 statuses                                                               |
+| F-12 | Purchase line columns totalled 640px inside a 520px card, hiding the lines subtotal                                                      | Rebalanced                                                                       |
+| F-13 | The disabled allocation-base radio truncated mid-sentence — the one place the reason must be readable                                    | Instance set to fill, label wraps                                                |
+| F-14 | Status badges sat left while their header was right-aligned, 31 rows across 5 screens                                                    | Header left-aligned, badges wrapped in a filling container                       |
+| F-15 | Chart axis labels distributed to the plot edges instead of under their bars                                                              | Fixed to the bar pitch and centred                                               |
+| F-16 | A font was mutated before `loadFontAsync` resolved, aborting a script and **rolling back every node it had created**                     | Fonts load before the first page switch in every script                          |
+| F-17 | Three tables squeezed their last column below 100px                                                                                      | General repair: fixed columns scale down wherever the final column is cramped    |
+| F-18 | A report chart's axis read Apr–Sep while its caption described run dates                                                                 | Caption corrected to describe months                                             |
+
+Three of these — F-06, F-09 and F-11 — would have shipped as real defects rather than cosmetic ones.
+
+---
+
+## 5. What remains
+
+The cut is complete. What is deliberately outside it:
+
+| Area                            | Outside the cut                                                                                                                                                                                                                                             |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tablet and mobile for desk work | Settings, suppliers, forms, onboarding, reports. Density is inherited from the Responsive variable modes and the table-to-mobile rule rather than drawn per screen                                                                                          |
+| Report frames                   | Eight of the twelve reports share the proven template; three exemplars cover a breakdown, a time series and a comparison                                                                                                                                    |
+| Components                      | ~29 of 52 remain: combobox, date field, drawer, bottom sheet, breadcrumb, tooltip, avatar, allocation preview and movement row as components, estimate-versus-actual pair, import mapping row. All are either unused by the cut or exist inline on a screen |
+| Screen-level states             | Loading, empty and error exist as components; Permission denied exists as a screen. Dedicated loading and empty screen frames are not drawn                                                                                                                 |
+| Prototype                       | Tablet and mobile are unwired, because Figma prototype links cannot cross pages                                                                                                                                                                             |
+
+**The named cost of the cut.** Phase 9 compares the implementation against Figma screen by screen. For a screen outside the cut there is no frame to compare against, so its responsive behaviour is inferred from two things rather than read: the `Responsive` variable collection, which makes density inherited rather than re-decided, and the table-to-mobile rule with its fixed column priorities. If a cut screen turns out to need a genuinely different mobile layout, the fix is to draw that one frame before coding it.
+
+## 6. Owner decisions recorded on 19 September
+
+| Item           | Outcome                                                                                                                                                                                  |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scope          | The ~70-frame cut, extending later once the system is settled. D-075                                                                                                                     |
+| Border weight  | Reduced. Every stroke 1px outside focus rings; divider token lightened. D-072                                                                                                            |
+| Brown          | Removed. Warning is now orange #C2410C; the gold chart value is now pink #E58FB0. D-071                                                                                                  |
+| File name      | Renamed by the owner to "Production Cost, Inventory & Profit — UI Design"                                                                                                                |
+| Brand          | Bloop logo placed in the sidebar component, the cover, and both sign-in screens. Brand crimson #96062A is documented as brand-only, not the interface accent. D-074                      |
+| Q3, quotations | Read as: sample prices should be industry-realistic, quotations stay out of scope. Pricing snapshots remain the answer. D-076 — flagged as an interpretation of an ambiguous instruction |
+
+## 7. Next
+
+Phase 7 is ready for approval. On approval, Phase 8 produces the Figma-to-code handoff: final route inventory, screen-to-route mapping, component mapping, token mapping, data requirements per screen, feature implementation order, testing strategy and observable "done when" criteria. No application code is written until Phase 8 is approved.
+| F-19 | **100 input, select and search instances carried a 1.23:1 `border/strong` outline instead of the 3.44:1 `border/control`** — a WCAG 1.4.11 failure, and the only accessibility failure this pass found. The field had no visible boundary | Rebound to `border/control` on desktop; tablet and mobile were already correct. Disabled states deliberately left on `border/strong`, which 1.4.11 exempts |
+| F-20 | The overhead-recovery meter was at 162% of target and drawn proportionally, so a 560px fill sat inside a 518px track and spilled past the card edge | Fill clamped to the track. The overshoot is already stated in words beneath |
+| F-21 | That meter's caption used `status/success-fill` at 3.16:1 as body text, below the 4.5:1 floor | Promoted to `status/success` at 5.02:1. A file-wide sweep confirmed no other `-fill` token is used as text |
+| F-22 | **Six mobile screens had the tab bar floating 87px above the bottom edge.** The frames were fixed at the 844px viewport while their content totalled 757px, and every child hugged | `body` set to fill the primary axis on all 13 mobile screens, so the bar pins to the bottom and the layout survives a resize |
+| F-23 | **Twelve status badges were clipped mid-word across four tablet tables** — "Out of s", "Below targe". Four fixed columns took 560px of 626px, leaving the flexible status column 66px for a badge needing 110px | Each column measured for intrinsic width (clone, auto-size, read, discard) including the total rows, then rebalanced with the slack given to the name column. Zero clipped nodes remain on any page |
+| F-24 | Chart bars were rounded on all four corners, so they floated off the baseline instead of meeting the axis | Top corners only, 4px |
+| F-25 | `chart/5` and `chart/6` separated by only 1.17:1 in greyscale — the loss red and the neutral slate merged into one shade in print, while the palette claimed 1.3:1 | `chart/6` retuned to #6E7D93 (D-093). All five adjacent pairs now clear 1.3:1 |
+| F-26 | **Documentation drift on the Foundations page.** `border/strong` was labelled `#EDF0F6` when the token is `#E3E8F0`; eight contrast ratios were stale against the current accent and status colours; all six chart hexes described the retired palette; four type specimens described sizes the tokens no longer had; `border/focus` was never documented | Every ratio and swatch label is now computed from the live variables inside the script that writes them, and the type labels are generated from the text styles. Added the `border/focus` swatch and four missing contrast rows, and colour-coded failing verdicts |
+| F-27 | The Subtotal and Total cost-breakdown rows carried an expand chevron although neither is expandable — a false affordance | Chevron removed, replaced with an 18px spacer so their labels stay aligned with the expandable rows |
+| F-28 | _Process defect._ `page.loadAsync()` called in a loop over every page silently returns no nodes for the large pages, so an audit reported Desktop, Tablet and Mobile as clean when 100 defects were present. Only `setCurrentPageAsync` loads a page reliably, and it is one page per script run | Every audit and sweep re-run as one call per page. Any future file-wide check must fan out per page, never loop `loadAsync` |
+| F-29 | **The `Select` component was built, given six states and documented, then never placed on a single screen.** Every form field on every width was an `Input`, including 22 whose value comes from a fixed set — Channel, Payment status, Supplier, VAT treatment, Currency, Time zone, Item type, units and more. Nothing told the user a field was pickable, and a developer reading the frames would have built text inputs | 22 instances swapped to `Select` across desktop, tablet and mobile, preserving label, value, helper text and width. Date fields deliberately left as `Input` (D-098) |
+| F-30 | Mobile _New purchase_ reduced the three-option cost-allocation control to a single text field, losing the disabled option that explains why allocating by quantity is unavailable — the very affordance F-13 was raised to protect | Restored as a three-option radio group matching desktop, with the eyebrow label and wrapping labels. Frame regrown 1268 to 1364px so the Receive button clears the tab bar |
+| F-31 | The Components page had eight heading-on-component collisions, the worst 166px deep, and the new Sidebar variant set had been placed at the origin where it overlapped 22 nodes | Whole page re-flowed into three lanes — primitives, brand, navigation — with 14px heading-to-component and 50px block spacing. Zero overlapping nodes |
+| F-32 | _Repeat of a known trap._ `resize()` reset the new radio group's sizing modes to FIXED, so a container holding 174px of radios reported a height of 10px and clipped to one truncated option | Sizing modes re-set after the resize. This is the third time `resize()` has done this in the project; the rule is to set `primaryAxisSizingMode` last, never before a resize |
+| F-33 | **The headline sample figures did not reconcile.** PLA Basic Filament was shown moving from ₱1.104200 to ₱1.203083 on a 2,000 g purchase, with 2,300.000 g on hand. Those three cannot all be true: ₱1.104200 implies 2,312.69 g after the purchase. On a product whose whole claim is that the arithmetic is checkable, this is the worst place to carry an error | Prior average corrected to ₱1.100000 and the rise to +9.4%, which reproduce the ₱2,767.09 stock value and the ₱1.203083 average exactly. Fixed in four places across Dashboard, New purchase and Receive purchase. Found only because building the cost-history table forced the numbers to be recomputed |
+| F-34 | _Repeat of F-32._ `resize()` reset the sizing modes on the new readouts card and cost-history table, so both hugged to 10px tall | Hug re-asserted after children were appended. Third and fourth occurrence of this trap in the project; it is now recorded in the border/type doc as a standing rule |
+| F-35 | _My own rule, broken by me._ `Number.parseFloat` in the stock-status check. D-079's lint banned the bare global, so the member expression walked straight past it | Replaced with `toDecimal`. The rule now covers `Number.parseFloat` and `Number.parseInt`, with a comment recording that it was found by writing one |
+| F-36 | The New item client form imported `@/lib/items`, which imports the cookie-reading Supabase server client, pulling server code into the browser bundle | Split into `@/lib/item-types` for the pure helpers. `import 'server-only'` added to the server client so the next occurrence is an import error rather than a bundle trace |
+| F-37 | **Four grant defects, found on the live project rather than in the tests.** Supabase grants `anon` everything on every new table in `public`; PGlite has no such default, so the suite could not see it. Worst of the four: `delete from items` affected zero rows and reported success | Migration `0003` revokes the defaults and states every grant per table and verb. The harness now applies Supabase's default privileges before running the migrations, which made all four fail immediately, plus three new invariants |
+| F-38 | The item detail page fell back to the root layout's title, so every item's browser tab read "Production cost, inventory and profit" | `generateMetadata` added; the tab now names the item |
+| F-39 | The no-cost callout read "This item will have no cost yet" — a prediction about the future rather than a statement about the present | Reworded to "This item has no cost yet" |
