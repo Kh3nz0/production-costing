@@ -21,10 +21,14 @@ export async function valuationAsOf(
   asOf: string,
 ): Promise<{ rows: ValuationRow[]; error: string | null }> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc('inventory_valuation', {
-    p_org_id: orgId,
-    p_as_of: asOf,
-  });
+  const { data, error } = await supabase
+    .rpc('inventory_valuation', {
+      p_org_id: orgId,
+      p_as_of: asOf,
+    })
+    .select(
+      'item_id,item_name,item_type,unit_code,quantity::text,unit_cost::text,value_cents::text',
+    );
   if (error !== null) return { rows: [], error: error.message };
   return { rows: (data ?? []) as ValuationRow[], error: null };
 }
@@ -57,7 +61,7 @@ export async function listMovements(
   let builder = supabase
     .from('inventory_movements')
     .select(
-      'id, occurred_at, movement_type, quantity_change, resulting_qty, unit_cost_at_movement, cost_effect_cents, reason, source_table, source_id, item:items(name, base_unit:units!items_base_unit_id_fkey(code))',
+      'id, occurred_at, movement_type, quantity_change::text, resulting_qty::text, unit_cost_at_movement::text, cost_effect_cents::text, reason, source_table, source_id, item:items(name, base_unit:units!items_base_unit_id_fkey(code))',
     );
 
   if (query.itemId !== undefined && query.itemId !== '') {

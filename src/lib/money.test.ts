@@ -189,6 +189,11 @@ describe('the float ban is enforced by the types, not only by lint', () => {
     expect(() => fromInteger(Number.MAX_SAFE_INTEGER + 2)).toThrow(/safe integer/);
   });
 
+  it('rejects an API number even when a type assertion incorrectly calls it a string', () => {
+    const decoded = JSON.parse('{"rate":1.20308261}') as { rate: string };
+    expect(() => toDecimal(decoded.rate)).toThrow(/exact decimal text/);
+  });
+
   it('never divides by zero silently', () => {
     expect(() => Money.parse('10').dividedByExact('0')).toThrow(/zero/);
   });

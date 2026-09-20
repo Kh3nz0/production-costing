@@ -40,7 +40,7 @@ import {
  */
 
 type Built = {
-  href: '/dashboard' | '/items' | '/purchases' | '/inventory' | '/settings';
+  href: '/dashboard' | '/items' | '/purchases' | '/inventory' | '/products' | '/settings';
   stage?: never;
 };
 type Unbuilt = { href?: never; stage: string };
@@ -68,7 +68,7 @@ const OPERATE: Nav[] = [
 ];
 
 const UNDERSTAND: Nav[] = [
-  { label: 'Products', stage: 'S6', outline: CubeIcon, solid: CubeSolid },
+  { label: 'Products', href: '/products', outline: CubeIcon, solid: CubeSolid },
   { label: 'Reports', stage: 'S11', outline: ChartBarIcon, solid: ChartBarSolid },
 ];
 

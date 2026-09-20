@@ -26,7 +26,7 @@ export async function listItems(query: ItemListQuery = {}): Promise<{
   let builder = supabase
     .from('items')
     .select(
-      'id, name, sku, item_type, qty_on_hand, avg_unit_cost, reorder_point, archived_at, base_unit:units!items_base_unit_id_fkey(code, name)',
+      'id, name, sku, item_type, qty_on_hand::text, avg_unit_cost::text, reorder_point::text, archived_at, base_unit:units!items_base_unit_id_fkey(code, name)',
     );
 
   if (query.showArchived !== true) {
@@ -72,7 +72,7 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
   const { data } = await supabase
     .from('items')
     .select(
-      'id, name, sku, item_type, qty_on_hand, avg_unit_cost, reorder_point, archived_at, brand, colour, description, notes, supplier_lead_time_days, purchase_to_base_factor, is_costed, created_at, base_unit:units!items_base_unit_id_fkey(code, name), purchase_unit:units!items_purchase_unit_id_fkey(code, name)',
+      'id, name, sku, item_type, qty_on_hand::text, avg_unit_cost::text, reorder_point::text, archived_at, brand, colour, description, notes, supplier_lead_time_days, purchase_to_base_factor::text, is_costed, created_at, base_unit:units!items_base_unit_id_fkey(code, name), purchase_unit:units!items_purchase_unit_id_fkey(code, name)',
     )
     .eq('id', id)
     .maybeSingle();

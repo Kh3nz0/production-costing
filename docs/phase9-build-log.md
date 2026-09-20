@@ -288,3 +288,53 @@ The owner supplied screenshots of the signed-in Business and Equipment pages aft
 The live owner-session walkthrough then saved an equipment rate of ₱12.50/hour effective 1 January from a ₱50,000 sample price, 4,000 hours and zero allowances. The screenshot exposed F-48: the history showed only `12.5`, so the inputs could not be checked from the page. The revised history now shows currency, per-hour units, the stored 8-place rate and an expandable input list. After correcting the equipment price to the documented ₱48,000 sample and adding a 2 January version, the rendered page shows **₱12.00/hour In force** and the old **₱12.50/hour Superseded**, with both sets of inputs still readable. The old numeric rate did not move when the equipment price changed.
 
 The live equipment is labelled `SAMPLE DATA`. The owner confirmed that sample figures are the intended data until the system is built and real figures can be entered. The short sample name can be made more descriptive later; it does not block the S5 rate and history criteria.
+
+---
+
+## S6 — A product has a recipe and a cost that explains itself
+
+**Status: done.** 20 September 2026. 158 tests pass, and every criterion was confirmed on the rendered page in a live owner session. The owner confirmed applying `0007_products_and_recipes.sql` on 20 September 2026. Live PostgREST requests recognize all three new tables and both functions and reject anonymous access with 401 / 42501. The owner also confirmed applying `0008_recipe_required_values.sql`, whose required-value constraint is covered by PGlite tests. The Products list, New product, Recipe and Cost routes are built. Live rendering and the F-07 sample walkthrough are still required before this stage is done.
+
+The new database functions create a product and its detail row in one transaction, and save an active recipe with a new revision after a completed run locks the old one. The recursive trigger rejects direct and transitive cycles by the product's name. Tests cover both cycle forms, unit conversion refusal, wrong item type, tenant access, and preserved locked lines.
+
+The cost calculation uses exact decimal inputs and versions effective on the selected date. Machine electricity is derived from hours, watts and the utility rate, normalized to kWh. Missing item cost, rate, power, overhead or failure estimate is named and excluded where applicable. The F-07 test reproduces the documented component rows, ₱76.5552 visible direct cost, ₱80.5844 production cost and ₱92.9344 full cost, rounding to ₱92.93. The failure allowance is calculated before rounding. A separate rounding row appears only when needed to make displayed amounts add to their totals (D-123); the F-07 sample needs no adjustment row. Expanded rows expose additional exact rate digits when the six-place display has rounded them. The business date follows the organization's time zone.
+
+All existing monetary and quantity API reads now explicitly request numeric and bigint values as text (F-50), including items, purchases, stock valuation, movements and settings. A regression passes real JSON bytes through the installed Supabase SDK and preserves values beyond JS number precision; `toDecimal` rejects runtime numbers so an incorrect type assertion cannot conceal the same mistake. Recipe quantity conversion matches the existing database conversion, including item-specific pack factors and large six-place quantities. Another regression found that a missing recipe value passed the original SQL CHECK; 0008 adds the explicit non-null requirement (F-51). No applied migration was edited.
+
+### The live walkthrough, and what it cost to get a figure that could be checked
+
+The F-07 walkthrough was entered by hand in a signed-in session: equipment power draw, a ₱12.50/kWh utility rate, Assembly and Packing at ₱150.00/hour, a ₱9,500 ÷ 100 hour overhead rule, two new items, their opening balances, the product and its seven recipe lines. Four defects surfaced, none of them in the arithmetic and all of them in whether a reader could tell the arithmetic was right.
+
+| Found | What the page did                                                                                                                                 |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-55  | The utility rate read `₱12.50 / unit`. Per kWh and per Wh differ by a thousand in every electricity row and rendered identically                  |
+| F-56  | `₱95.00 / hour` with no way to see the ₱9,500 and the 100 hours behind it, although F-48 had already settled that a derived rate shows its inputs |
+| F-57  | An opening-balance picker offering "Choose an item" when every item was disqualified, with the reason as a footnote below the dead control        |
+| —     | The overhead row label repeated its own section heading word for word                                                                             |
+
+**The result, and where it differs from the printed example.**
+
+| Row                | Live              | F-07     |
+| ------------------ | ----------------- | -------- |
+| PLA Basic Filament | ₱23.5423          | ₱23.2436 |
+| Mechanical Switch  | ₱25.4303          | ₱25.4303 |
+| Key Ring           | ₱2.5000           | ₱2.5000  |
+| Plastic Bag        | ₱1.2000           | ₱1.2000  |
+| Machine time       | ₱4.2000           | ₱4.2000  |
+| Electricity        | ₱0.4813           | ₱0.4813  |
+| Assembly, Packing  | ₱15.0000, ₱4.5000 | same     |
+| Overhead           | ₱12.3500          | ₱12.3500 |
+
+One row differs, and it is data rather than calculation. F-07 assumes the filament had blended a 300 g opening balance at ₱1.10 into the F-01 receipt, giving ₱1.20308261. The live item never had that opening balance, so its average is the receipt's own landed cost, ₱1.218545, and 19.32 × 1.218545 = ₱23.5423 exactly (D-125).
+
+**The missing-rate case is the one that proves the display rule.** Costed at 2025-12-31, before any rate version exists, five inputs are named and excluded rather than counted as zero, and a **rounding adjustment** row appears:
+
+```
+exact direct cost      52.67262274
+rows as displayed      52.6726
+exact allowance         2.7722
+visible allowance       2.7723
+rounding adjustment     0.0001
+```
+
+The failure allowance is taken from the exact direct cost, so it is ₱2.7722; the displayed column needs ₱2.7723 to reach the stated total. Rather than absorb the centavo into the allowance, the page shows it as its own line (D-123). No such row appears in the complete case, because nothing there needs reconciling.

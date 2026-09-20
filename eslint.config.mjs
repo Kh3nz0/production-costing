@@ -10,9 +10,9 @@ const config = [
   {
     files: ['src/**/*.{ts,tsx}'],
     rules: {
-      // D-079. Postgres `numeric` arrives over PostgREST as a string. Coercing it
-      // to a JS float drifts at the fourth decimal, and the cost breakdown
-      // displays six. Parse through decimal.js instead: see src/lib/decimal.ts.
+      // D-079 / F-50. Request PostgREST numeric columns as text so the SDK never
+      // parses them as JS floats. Preserve that text through decimal.js; the
+      // cost breakdown displays six places. See src/lib/decimal.ts.
       //
       // The `Numeric` type already excludes `number`, so this rule exists to
       // catch the coercion happening before a value ever reaches that type.

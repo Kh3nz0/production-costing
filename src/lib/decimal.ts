@@ -24,15 +24,21 @@ export { Decimal };
 /**
  * Anything that can be read as an exact number.
  *
- * `number` is deliberately absent. Postgres `numeric` arrives over PostgREST as
- * a string, and coercing it to a JS float drifts at the fourth decimal while the
- * cost breakdown displays six (D-079). Keeping `number` out of this type makes
- * that mistake a compile error rather than a lint warning.
+ * `number` is deliberately absent. Numeric columns must be requested as text
+ * (for example, `avg_unit_cost::text` in PostgREST). Ordinary JSON numbers are
+ * parsed as JS floats by the Supabase SDK before Decimal sees them. A TypeScript
+ * assertion cannot repair that lost precision. Keeping `number` out of this
+ * type also catches explicit float arithmetic at compile time (D-079, F-50).
  */
 export type Numeric = string | Decimal;
 
 /** Parse an exact value. Throws rather than yielding NaN. */
 export function toDecimal(value: Numeric): Decimal {
+  if (typeof value !== 'string' && !(value instanceof Decimal)) {
+    throw new TypeError(
+      'Expected exact decimal text or Decimal; request numeric database values as text.',
+    );
+  }
   const d = value instanceof Decimal ? value : new Decimal(value);
   if (!d.isFinite()) {
     throw new RangeError(`Not a finite number: ${String(value)}`);
@@ -106,6 +112,12 @@ export function formatRate(value: Numeric): string {
  */
 export function formatCalculationRate(value: Numeric): string {
   return peso(value, 6);
+}
+
+/** Exact rate for explaining a result when the six-place display is rounded. */
+export function formatExactRate(value: Numeric): string {
+  const d = toDecimal(value);
+  return peso(d, d.decimalPlaces());
 }
 
 export function formatCalculationAmount(value: Numeric): string {

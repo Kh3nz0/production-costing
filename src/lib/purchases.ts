@@ -19,7 +19,7 @@ export async function listPurchases(): Promise<{ rows: PurchaseRow[]; error: str
   const { data, error } = await supabase
     .from('purchases')
     .select(
-      'id, reference_no, purchase_date, status, landed_cost_base, supplier_shipping_cents, duties_cents, other_landed_cost_cents, discount_cents, supplier:suppliers(name)',
+      'id, reference_no, purchase_date, status, landed_cost_base, supplier_shipping_cents::text, duties_cents::text, other_landed_cost_cents::text, discount_cents::text, supplier:suppliers(name)',
     )
     .is('archived_at', null)
     .order('purchase_date', { ascending: false })
@@ -61,12 +61,12 @@ export async function getPurchase(id: string): Promise<PurchaseDetail | null> {
     .from('purchases')
     .select(
       `id, reference_no, purchase_date, status, landed_cost_base, notes, received_at,
-       supplier_shipping_cents, duties_cents, other_landed_cost_cents, discount_cents,
+       supplier_shipping_cents::text, duties_cents::text, other_landed_cost_cents::text, discount_cents::text,
        supplier:suppliers(name),
        lines:purchase_lines(
-         id, item_id, qty_ordered, qty_received, unit_price_cents, line_discount_cents,
-         line_weight, allocated_landed_cost_cents, landed_total_cents, receipt_unit_cost,
-         item:items(name, purchase_to_base_factor, base_unit:units!items_base_unit_id_fkey(code)),
+         id, item_id, qty_ordered::text, qty_received::text, unit_price_cents::text, line_discount_cents::text,
+         line_weight::text, allocated_landed_cost_cents::text, landed_total_cents::text, receipt_unit_cost::text,
+         item:items(name, purchase_to_base_factor::text, base_unit:units!items_base_unit_id_fkey(code)),
          purchase_unit:units!purchase_lines_purchase_unit_id_fkey(code, name, dimension_code)
        )`,
     )
@@ -107,7 +107,7 @@ export async function listPurchasableItems(): Promise<PurchasableItem[]> {
   const { data } = await supabase
     .from('items')
     .select(
-      'id, name, purchase_to_base_factor, base_unit:units!items_base_unit_id_fkey(code, name), purchase_unit:units!items_purchase_unit_id_fkey(id, code, name, dimension_code)',
+      'id, name, purchase_to_base_factor::text, base_unit:units!items_base_unit_id_fkey(code, name), purchase_unit:units!items_purchase_unit_id_fkey(id, code, name, dimension_code)',
     )
     .is('archived_at', null)
     .order('name', { ascending: true })

@@ -6,6 +6,15 @@ import { formatPercent, formatQuantity, formatRate, groupDigits, toDecimal } fro
 import { Money } from '@/lib/money';
 import { SettingForm } from '../setting-form';
 
+// The stored method is an enum; these are the words docs/phase4-content-screens.md
+// uses for it. A raw `per_attended_hour` on screen is a leak, not a label.
+const OVERHEAD_METHOD: Record<string, string> = {
+  per_attended_hour: 'Per working hour',
+  percent_of_direct_cost: 'As a percentage of production cost',
+  flat_per_unit: 'A flat amount per unit',
+  none: 'Not spread',
+};
+
 const sections = [
   ['business', 'Business'],
   ['equipment', 'Equipment'],
@@ -17,6 +26,25 @@ const sections = [
 
 type Row = Record<string, unknown>;
 type Section = (typeof sections)[number][0];
+
+// Explicit text projections keep financial values exact before JSON parsing.
+const projections = {
+  equipment:
+    'id,name,category,purchase_price_cents::text,purchase_date,status,rated_power_watts::text,measured_avg_power_watts::text,notes,created_at',
+  equipment_rate_versions:
+    'id,equipment_id,effective_from,cost_recovery_period_months,expected_productive_hours::text,maintenance_allowance_cents::text,repair_allowance_cents::text,hourly_recovery_rate::text,notes,created_at',
+  utility_rates:
+    'id,utility_type,rate_per_unit::text,unit_id,effective_from,source_reference,notes,created_at',
+  labor_activities:
+    'id,name,attended,default_duration::text,duration_unit_id,status,notes,created_at',
+  labor_rate_versions: 'id,activity_id,hourly_rate::text,effective_from,notes,created_at',
+  overhead_versions:
+    'id,effective_from,method,monthly_pool_cents::text,expected_monthly_attended_hours::text,rate::text,percent::text,created_at',
+  overhead_categories: 'id,name,notes,created_at',
+  sales_channels: 'id,name,status,notes,created_at',
+  channel_fee_versions:
+    'id,channel_id,effective_from,commission_rate::text,payment_rate::text,fixed_fee_cents::text,notes,created_at',
+} as const;
 
 function input(
   name: string,
@@ -80,7 +108,14 @@ function history(
   rateField: string,
   parentField?: string,
   parents?: Row[],
+  units?: Row[],
 ) {
+  // A utility rate without its unit is not a figure anyone can check: ₱12.50 per
+  // kWh and ₱12.50 per Wh look identical here and differ by a thousand in the
+  // electricity row of every cost breakdown. Name the unit the row was saved with.
+  function unitCode(row: Row): string {
+    return String(units?.find((u) => u.id === row.unit_id)?.code ?? 'unit');
+  }
   function shownRate(row: Row): string {
     const value = String(row[rateField]);
     if (rateField === 'commission_rate') return formatPercent(value);
@@ -91,7 +126,7 @@ function history(
     ) {
       return `${formatRate(value)} / hour`;
     }
-    return `${formatRate(value)} / unit`;
+    return `${formatRate(value)} / ${unitCode(row)}`;
   }
   const today = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Manila',
@@ -118,11 +153,18 @@ function history(
               key={String(row.id)}
               className="text-body-sm flex flex-wrap justify-between gap-2 border-t border-border-strong py-2 text-text-primary"
             >
-              <span>
-                {parentField && parents
-                  ? String(parents.find((p) => p.id === row[parentField])?.name ?? '')
-                  : title}
-              </span>
+              {/* Overhead has one rule per date, so a label here only repeats the
+                  section heading word for word. Every other history names the
+                  thing the rate belongs to. */}
+              {rateField !== 'rate' && (
+                <span>
+                  {parentField && parents
+                    ? String(parents.find((p) => p.id === row[parentField])?.name ?? '')
+                    : rateField === 'rate_per_unit'
+                      ? String(row.utility_type)
+                      : title}
+                </span>
+              )}
               <span className="tabular-nums">
                 {String(row.effective_from)} · {shownRate(row)}
               </span>
@@ -137,6 +179,39 @@ function history(
               <span className="text-text-secondary">
                 Recorded by you on {String(row.created_at).slice(0, 10)}
               </span>
+              {rateField === 'rate' && (
+                // F-48 again, on the other derived rate. ₱95.00 per hour is a
+                // quotient, not an entry: without the pool and the hours beside
+                // it, nobody can tell a correct rate from a mistyped one.
+                <details className="w-full text-text-secondary">
+                  <summary className="cursor-pointer text-accent-text">Rate inputs</summary>
+                  <dl className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <dt>Where the rate came from</dt>
+                      <dd className="tabular-nums">
+                        {Money.fromCentavos(BigInt(String(row.monthly_pool_cents))).format()}{' '}
+                        monthly ÷{' '}
+                        {row.expected_monthly_attended_hours === null
+                          ? '—'
+                          : formatQuantity(String(row.expected_monthly_attended_hours))}{' '}
+                        expected hours
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Stored rate</dt>
+                      <dd className="tabular-nums">
+                        {row.rate === null
+                          ? 'Not set'
+                          : `₱${groupDigits(toDecimal(String(row.rate)).toFixed(8))} / hour`}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>How overhead is spread</dt>
+                      <dd>{OVERHEAD_METHOD[String(row.method)] ?? String(row.method)}</dd>
+                    </div>
+                  </dl>
+                </details>
+              )}
               {rateField === 'hourly_recovery_rate' && (
                 <details className="w-full text-text-secondary">
                   <summary className="cursor-pointer text-accent-text">Rate inputs</summary>
@@ -205,16 +280,22 @@ export default async function SettingsSection({
   const current = section as Section;
   const org = await requireOrg();
   const supabase = await createClient();
-  async function rows(table: string, order = 'name'): Promise<Row[]> {
+  async function rows(table: keyof typeof projections, order = 'name'): Promise<Row[]> {
+    // The section chooses a projection at runtime; do not ask the SDK's
+    // compile-time SELECT parser to combine different tables' column lists.
+    const projection: string = projections[table];
     const { data, error } = await supabase
       .from(table)
-      .select('*')
+      .select(projection)
       .eq('org_id', org.id)
       .order(order, { ascending: order !== 'effective_from' })
       .order('id')
       .range(0, 499);
     if (error) throw new Error(error.message);
-    return (data ?? []) as Row[];
+    // A runtime projection string leaves the SDK unable to infer the row shape,
+    // so it types the result as its parse-failure placeholder. The shape is
+    // validated by the projections above, which name real columns per table.
+    return (data ?? []) as unknown as Row[];
   }
   const [
     equipment,
@@ -248,7 +329,13 @@ export default async function SettingsSection({
   ]);
   const business =
     current === 'business'
-      ? (await supabase.from('organizations').select('*').eq('id', org.id).single()).data
+      ? (
+          await supabase
+            .from('organizations')
+            .select('name,currency_code,locale,timezone,vat_registered')
+            .eq('id', org.id)
+            .single()
+        ).data
       : null;
 
   return (
@@ -424,7 +511,7 @@ export default async function SettingsSection({
                 {input('source_reference', 'Source reference')}
               </>,
             )}
-            {history('Utility rate', utilities, 'rate_per_unit')}
+            {history('Utility rate', utilities, 'rate_per_unit', undefined, undefined, units)}
           </>
         )}
         {current === 'labour' && (

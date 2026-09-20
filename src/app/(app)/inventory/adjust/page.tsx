@@ -17,7 +17,7 @@ export default async function AdjustPage({
   const { data } = await supabase
     .from('items')
     .select(
-      'id, name, qty_on_hand, base_unit:units!items_base_unit_id_fkey(code), inventory_movements(id)',
+      'id, name, qty_on_hand::text, base_unit:units!items_base_unit_id_fkey(code), inventory_movements(id)',
     )
     .is('archived_at', null)
     .order('name', { ascending: true })

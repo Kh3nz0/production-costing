@@ -49,6 +49,35 @@ export function AdjustForm({
     }
   }
 
+  // A picker holding nothing is a dead end: "Choose an item" promises a choice
+  // that does not exist, and the reason sits below it as a footnote. Say it
+  // instead, and name the two ways out.
+  if (opening && choices.length === 0) {
+    return (
+      <div className="mt-6 flex max-w-[520px] flex-col gap-4">
+        <p className="text-body text-text-primary">
+          Every item already has stock history, so none can take an opening balance. An opening
+          balance is only valid as an item&rsquo;s first movement.
+        </p>
+        <p className="text-body-sm text-text-secondary">
+          To give an item a cost from here, record a purchase. To start one over, archive it and
+          create it again.
+        </p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/purchases/new"
+            className="text-body-sm text-text-primary font-medium underline"
+          >
+            Record a purchase
+          </Link>
+          <Link href="/inventory" className="text-body-sm text-text-secondary underline">
+            Back to inventory
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form action={action} className="mt-6 flex max-w-[520px] flex-col gap-4">
       <div className="flex w-full flex-col gap-1">

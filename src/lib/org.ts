@@ -7,6 +7,7 @@ export interface Org {
   currency_code: string;
   vat_registered: boolean;
   vat_rate: string;
+  timezone: string;
 }
 
 /** The caller's organization, or null if they are not in one yet. */
@@ -14,7 +15,7 @@ export async function getCurrentOrg(): Promise<Org | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('organizations')
-    .select('id, name, currency_code, vat_registered, vat_rate')
+    .select('id, name, currency_code, vat_registered, vat_rate::text, timezone')
     .is('archived_at', null)
     .order('name', { ascending: true })
     .order('id', { ascending: true })
