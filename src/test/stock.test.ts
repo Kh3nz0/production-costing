@@ -157,9 +157,14 @@ describe('an opening balance needs no purchase', () => {
 
     const after = await balance(item);
     expect(toDecimal(after.qty_on_hand).toFixed(3)).toBe('2000.000');
-    // The unknown stock contributes no value, so the average is the new stock's
-    // value spread across all of it.
-    expect(toDecimal(after.avg_unit_cost!).toFixed(8)).toBe('1.00000000');
+    // Reversed by D-126, and this test is the record of the argument. It used
+    // to expect ₱1.00: the unknown stock counted as worth nothing, so ₱2,000.00
+    // spread across 2,000 g. That kept stock value equal to money spent, at the
+    // price of a material cost below anything ever paid — and an understated
+    // material cost silently underprices every unit sold, which is the failure
+    // this product exists to prevent. The price just paid now stands for the
+    // whole pile.
+    expect(toDecimal(after.avg_unit_cost!).toFixed(8)).toBe('2.00000000');
   });
 
   it('refuses a second opening balance, which would rewrite history', async () => {

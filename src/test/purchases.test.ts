@@ -301,6 +301,58 @@ describe('F-02 moving weighted average, the worked example', () => {
     ).toBe('₱2,767.09');
   });
 
+  it('does not value stock of unknown cost at zero (D-126)', async () => {
+    // The live walkthrough produced exactly this state: 50 units arrived by
+    // adjustment, so the item held a quantity nobody had costed. Valuing that
+    // pile at zero and averaging it against a real purchase produced an
+    // average below anything ever paid, stored as a plain number with nothing
+    // marking it as a guess.
+    const item = await newItem('Adjusted before any purchase', gram, spool, '1000');
+    await t.asUser(owner, async () => {
+      await t.db.query(`select public.adjust_stock($1, 50, 'adjustment', 'Stock count')`, [item]);
+    });
+    const before = await itemBalance(item);
+    expect(before.avg_unit_cost).toBeNull();
+
+    // One spool, 1000 g, ₱1,100.00, so the established cost is ₱1.10 per gram.
+    await receive(
+      await draftPurchase({
+        reference: 'PUR-UNKNOWN',
+        lines: [{ item, qty: '1', unit: spool, priceCents: 110000 }],
+      }),
+    );
+
+    const after = await itemBalance(item);
+    expect(toDecimal(after.qty_on_hand).toFixed(3)).toBe('1050.000');
+    // Before 0009 this was 1.04761905: ₱1,100.00 spread over 1,050 g because
+    // the 50 g counted as free.
+    expect(toDecimal(after.avg_unit_cost!).toFixed(8)).toBe('1.10000000');
+  });
+
+  it('still blends normally once a cost is established', async () => {
+    // The exception is only for the null case. A second receipt against a
+    // known average must go on averaging, or 0009 would have replaced F-02
+    // rather than carved one case out of it.
+    const item = await newItem('Known then bought again', gram, spool, '1000');
+    await receive(
+      await draftPurchase({
+        reference: 'PUR-KNOWN-A',
+        lines: [{ item, qty: '1', unit: spool, priceCents: 100000 }],
+      }),
+    );
+    expect(toDecimal((await itemBalance(item)).avg_unit_cost!).toFixed(8)).toBe('1.00000000');
+
+    await receive(
+      await draftPurchase({
+        reference: 'PUR-KNOWN-B',
+        lines: [{ item, qty: '1', unit: spool, priceCents: 200000 }],
+      }),
+    );
+    const after = await itemBalance(item);
+    expect(toDecimal(after.qty_on_hand).toFixed(3)).toBe('2000.000');
+    expect(toDecimal(after.avg_unit_cost!).toFixed(8)).toBe('1.50000000');
+  });
+
   it('applies two lines for one item in sequence, not in parallel', async () => {
     // The second line must see the average the first produced. Getting this
     // wrong gives an average computed from a stale balance.
