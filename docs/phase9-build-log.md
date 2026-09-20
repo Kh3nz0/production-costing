@@ -451,7 +451,7 @@ The ledger shows four consumption movements and one output movement, and the Ite
 
 **Done when:** the F-13 example reproduces ₱15.12 and 15.7%; fees stored as amounts survive a channel rate change; uncosted stock blocked, override flags `cost_source='estimate'`; a sale recorded in under 20 seconds on a 390px viewport in a timed run.
 
-**Status: built, awaiting the live walkthrough and the timed run.** 231 tests pass. `0014_sales.sql` is proven against PGlite and not yet applied live.
+**Status: four criteria of five.** 235 tests pass. `0014` is live. The fifth — a sale recorded in under 20 seconds on a 390px viewport — is **blocked**: the app has no mobile layout yet, so the attempt could not be made (F-69). It is carried forward to the responsive work, not waived.
 
 | Clause                     | Evidence                                                                                                                                                                                                          |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
