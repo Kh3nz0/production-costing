@@ -385,6 +385,8 @@ it('finds a rate for every referenced machine and activity when another has over
     archived_at: null,
     base_unit_id: 'pc',
     expected_failure_rate: '0',
+    target_margin: null,
+    minimum_margin: null,
     expected_output_qty_per_run: '1',
     bom: { id: 'recipe', revision_no: 1, status: 'active', locked_at: null, notes: null },
     lines: ['busy', 'sparse'].flatMap((suffix) => [

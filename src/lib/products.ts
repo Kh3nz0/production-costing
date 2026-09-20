@@ -18,6 +18,8 @@ export interface ProductRecord {
   base_unit_id: string;
   expected_failure_rate: string | null;
   expected_output_qty_per_run: string | null;
+  target_margin: string | null;
+  minimum_margin: string | null;
   bom: {
     id: string;
     revision_no: number;
@@ -117,7 +119,9 @@ export async function getProduct(id: string, orgId?: string): Promise<ProductRec
     itemQuery.maybeSingle(),
     db
       .from('product_details')
-      .select('expected_failure_rate::text,expected_output_qty_per_run::text')
+      .select(
+        'expected_failure_rate::text,expected_output_qty_per_run::text,target_margin::text,minimum_margin::text',
+      )
       .eq('item_id', id)
       .maybeSingle(),
     db
@@ -149,10 +153,17 @@ export async function getProduct(id: string, orgId?: string): Promise<ProductRec
   return {
     ...(itemResult.data as Omit<
       ProductRecord,
-      'expected_failure_rate' | 'expected_output_qty_per_run' | 'bom' | 'lines'
+      | 'expected_failure_rate'
+      | 'expected_output_qty_per_run'
+      | 'target_margin'
+      | 'minimum_margin'
+      | 'bom'
+      | 'lines'
     >),
     expected_failure_rate: detailsResult.data?.expected_failure_rate ?? null,
     expected_output_qty_per_run: detailsResult.data?.expected_output_qty_per_run ?? null,
+    target_margin: detailsResult.data?.target_margin ?? null,
+    minimum_margin: detailsResult.data?.minimum_margin ?? null,
     bom,
     lines,
   };
@@ -450,4 +461,100 @@ export async function getProductCost(
         }
       : null,
   );
+}
+
+export interface ChannelWithFees {
+  id: string;
+  name: string;
+  commissionRate: string;
+  paymentRate: string;
+  fixedFeeCents: string;
+  effectiveFrom: string | null;
+}
+
+export interface PricingSnapshotRow {
+  id: string;
+  taken_at: string;
+  channel_id: string | null;
+  pricing_unit_cost: string;
+  inventory_unit_cost: string;
+  target_margin: string;
+  expected_contribution_margin: string | null;
+  list_price_cents: string;
+}
+
+/**
+ * The channels a price can be quoted for, each carrying the fee version in
+ * force on `date` rather than its newest one. A price quoted in March has to be
+ * explainable with March's fees (F-09).
+ */
+export async function getChannelsWithFees(orgId: string, date: string): Promise<ChannelWithFees[]> {
+  const db = await createClient();
+  const [channels, fees] = await Promise.all([
+    db
+      .from('sales_channels')
+      .select('id,name')
+      .eq('org_id', orgId)
+      .eq('status', 'active')
+      .order('name')
+      .order('id')
+      .range(0, 499),
+    db
+      .from('channel_fee_versions')
+      .select(
+        'id,channel_id,effective_from,commission_rate::text,payment_rate::text,fixed_fee_cents::text',
+      )
+      .eq('org_id', orgId)
+      .lte('effective_from', date)
+      .order('effective_from', { ascending: false })
+      .order('id', { ascending: false })
+      .range(0, 499),
+  ]);
+  if (channels.error) throw new Error(channels.error.message);
+  if (fees.error) throw new Error(fees.error.message);
+
+  const versions = (fees.data ?? []) as {
+    id: string;
+    channel_id: string;
+    effective_from: string;
+    commission_rate: string;
+    payment_rate: string;
+    fixed_fee_cents: string;
+  }[];
+  return ((channels.data ?? []) as { id: string; name: string }[]).map((channel) => {
+    const inForce = latest(
+      versions.filter((v) => v.channel_id === channel.id),
+      date,
+    );
+    return {
+      id: channel.id,
+      name: channel.name,
+      // A channel with no fee version yet takes no cut. That is a statement
+      // about what has been recorded, not a claim that the channel is free,
+      // and the screen says so beside it.
+      commissionRate: inForce?.commission_rate ?? '0',
+      paymentRate: inForce?.payment_rate ?? '0',
+      fixedFeeCents: inForce?.fixed_fee_cents ?? '0',
+      effectiveFrom: inForce?.effective_from ?? null,
+    };
+  });
+}
+
+export async function getPricingSnapshots(
+  orgId: string,
+  itemId: string,
+): Promise<PricingSnapshotRow[]> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from('pricing_snapshots')
+    .select(
+      'id,taken_at,channel_id,pricing_unit_cost::text,inventory_unit_cost::text,target_margin::text,expected_contribution_margin::text,list_price_cents::text',
+    )
+    .eq('org_id', orgId)
+    .eq('item_id', itemId)
+    .order('taken_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(0, 99);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as PricingSnapshotRow[];
 }

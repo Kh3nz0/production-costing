@@ -352,3 +352,27 @@ This reversed a position S4 took deliberately, with a test asserting it. The tra
 160 tests. The new regression was run against the schema without `0009` and reproduced ₱1.04761905 before it passed. After applying, the live API answers 404 for anonymous calls to `receive_purchase`, matching the two untouched functions beside it, and 401 for an anonymous read of `items`.
 
 No existing data needed repair: no purchase had ever been received against uncosted stock on the live project.
+
+---
+
+## S7 — Pricing answers the real question
+
+**Done when:** margin and markup together; the trap example shows ₱100.00 and ₱84.00; the back-solve reproduces ₱154.88, ₱166.54, ₱185.05; **both** break-evens show ₱86.65 and ₱99.92; expected contribution margin shows 48.0% beside the 40% target; a 100% margin is refused.
+
+**Status: built, awaiting the live walkthrough.** 191 tests pass, including all six clauses above as separate cases.
+
+`src/lib/pricing.ts` holds F-08, F-09 and F-10. It is pure, exact, and refuses rather than returning a silent null: a margin at or above 100%, fees at or above 100%, a 100% discount each come back with the sentence the screen shows. The one idea the module exists to hold on to is that a price is built on the **full** cost, because a price has to recover overhead, while the contribution margin a sale later reports subtracts only the **production** cost, because overhead is never capitalised into stock (D-008). The two figures differ on purpose and the screen shows both.
+
+| Clause           | Reproduced                                                                                                                         |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| The trap         | ₱60.00 cost at 40% gives ₱100.00 as a margin and ₱84.00 as a markup, ₱16.00 apart, each row carrying both percentages              |
+| The back-solve   | ₱154.88 direct, ₱166.54 on Shopee at 7%, ₱185.05 with a 10% discount planned                                                       |
+| The gap          | 48.0% expected contribution beside the 40% target, and the difference accounted for exactly as the ₱12.35 of overhead              |
+| Both break-evens | ₱86.65 and ₱99.92, with ₱12.35 of contribution still standing at the higher one — the figure the old single break-even called zero |
+| 100% refused     | In the calculation, in the server action, and in the database function                                                             |
+
+Margin is measured against **net revenue**, not the list price. With a 10% discount planned, the ₱185.05 list price nets ₱154.89 and the margin describes that; measuring against ₱185.05 would report a margin on money that never arrives.
+
+`0010_pricing_snapshots.sql` adds the snapshot table: both costs, the price, both break-evens, and the channel's terms **by value** in `inputs`, because an id alone would not survive the fee version being superseded, which is exactly when the question gets asked. Write-once by construction — select and nothing else is granted, so an attempt to edit one is refused at the grant rather than silently changing zero rows (the failure F-37 was raised for). Snapshots are written only by `save_pricing_snapshot`, called from a server action that recomputes every figure from the product's own cost: what the browser displayed is not evidence, and a snapshot exists to be evidence.
+
+**Writing the snapshot tests found F-60**, a cross-tenant write reachable through four functions from S3 and S4. That is recorded above, under 0011.
