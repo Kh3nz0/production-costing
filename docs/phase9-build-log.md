@@ -338,3 +338,17 @@ rounding adjustment     0.0001
 ```
 
 The failure allowance is taken from the exact direct cost, so it is ₱2.7722; the displayed column needs ₱2.7723 to reach the stated total. Rather than absorb the centavo into the allowance, the page shows it as its own line (D-123). No such row appears in the complete case, because nothing there needs reconciling.
+
+---
+
+## 0009 — Unknown cost is not zero
+
+**Applied live 20 September 2026**, confirmed by the owner. Between S6 and S7, not part of either.
+
+`receive_purchase` valued uncosted stock at ₱0.00 when averaging, so 50 units nobody had costed plus 1,000 g bought at ₱1.10 stored ₱1.04761905 — below any price ever paid, and indistinguishable on screen from a correct figure (F-58). A null prior average now takes the received unit cost.
+
+This reversed a position S4 took deliberately, with a test asserting it. The trade-off went to the owner in full: way A keeps stock value equal to money spent but understates the material cost; way B prices correctly but values the old pile above what was paid for it. He chose B — underpricing every unit sold is the failure this product exists to prevent (D-126).
+
+160 tests. The new regression was run against the schema without `0009` and reproduced ₱1.04761905 before it passed. After applying, the live API answers 404 for anonymous calls to `receive_purchase`, matching the two untouched functions beside it, and 401 for an anonymous read of `items`.
+
+No existing data needed repair: no purchase had ever been received against uncosted stock on the live project.
