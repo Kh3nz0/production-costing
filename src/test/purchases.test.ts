@@ -309,7 +309,12 @@ describe('F-02 moving weighted average, the worked example', () => {
     // marking it as a guess.
     const item = await newItem('Adjusted before any purchase', gram, spool, '1000');
     await t.asUser(owner, async () => {
-      await t.db.query(`select public.adjust_stock($1, 50, 'adjustment', 'Stock count')`, [item]);
+      // Dated before the purchase, which is dated 2026-09-16: a movement behind
+      // existing history is refused now (D-128).
+      await t.db.query(
+        `select public.adjust_stock($1, 50, 'adjustment', 'Stock count', '2026-09-01')`,
+        [item],
+      );
     });
     const before = await itemBalance(item);
     expect(before.avg_unit_cost).toBeNull();

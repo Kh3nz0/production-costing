@@ -150,7 +150,12 @@ describe('an opening balance needs no purchase', () => {
   it('picks up a real cost at the next purchase', async () => {
     const item = await newItem('Uncosted then bought');
     await t.asUser(owner, async () => {
-      await t.db.query(`select public.record_opening_balance($1, 1000)`, [item]);
+      // Dated before the purchase below: a movement behind existing history is
+      // refused now, because a past valuation reads the balance each movement
+      // stored (D-128).
+      await t.db.query(`select public.record_opening_balance($1, 1000, null, '2026-03-01')`, [
+        item,
+      ]);
     });
     // 1000 g held at no known cost, then 1000 g arrives at ₱2.00 per gram.
     await receiveSpools(item, '1', '2000.00', '2026-04-01');
