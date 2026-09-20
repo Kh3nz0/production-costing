@@ -39,7 +39,7 @@ import {
  * of step with what is actually built.
  */
 
-type Built = { href: '/dashboard' | '/items'; stage?: never };
+type Built = { href: '/dashboard' | '/items' | '/purchases'; stage?: never };
 type Unbuilt = { href?: never; stage: string };
 
 interface NavItem {
@@ -53,7 +53,7 @@ type Nav = NavItem & (Built | Unbuilt);
 const OPERATE: Nav[] = [
   { label: 'Dashboard', href: '/dashboard', outline: Squares2X2Icon, solid: Squares2X2Solid },
   { label: 'Items', href: '/items', outline: ArchiveBoxIcon, solid: ArchiveBoxSolid },
-  { label: 'Purchases', stage: 'S3', outline: ShoppingBagIcon, solid: ShoppingBagSolid },
+  { label: 'Purchases', href: '/purchases', outline: ShoppingBagIcon, solid: ShoppingBagSolid },
   { label: 'Production', stage: 'S8', outline: Cog6ToothIcon, solid: Cog6ToothSolid },
   { label: 'Sales', stage: 'S9', outline: TagIcon, solid: TagSolid },
   { label: 'Inventory', stage: 'S4', outline: RectangleStackIcon, solid: RectangleStackSolid },

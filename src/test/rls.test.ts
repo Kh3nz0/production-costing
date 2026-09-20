@@ -369,7 +369,7 @@ describe('grants are stated, not inherited', () => {
     expect(r.rows[0]?.n).toBe(0);
   });
 
-  it('lets a tenant delete from memberships and nothing else', async () => {
+  it('lets a tenant delete only from the two tables where deleting is meaningful', async () => {
     // Everything else in this schema is archived rather than deleted. A DELETE
     // grant with no DELETE policy is the dangerous combination: RLS removes no
     // rows and reports success, so the application shows a confirmation for
@@ -382,7 +382,13 @@ describe('grants are stated, not inherited', () => {
          and privilege_type = 'DELETE'
        order by table_name`,
     );
-    expect(r.rows.map((x) => x.table_name)).toEqual(['memberships']);
+    // memberships: an owner removes a person.
+    // purchase_lines: a line may be dropped while the purchase is still a draft,
+    //   and the policy closes that door the moment it is received.
+    // Everything else archives. Nothing may ever delete from
+    // inventory_movements, which is the one that would let the cache and the
+    // ledger disagree.
+    expect(r.rows.map((x) => x.table_name)).toEqual(['memberships', 'purchase_lines']);
   });
 
   it('never lets a tenant insert an organization directly', async () => {

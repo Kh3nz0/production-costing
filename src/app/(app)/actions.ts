@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { requireOrg } from '@/lib/org';
 import { isItemType } from '@/lib/item-types';
+import { Money } from '@/lib/money';
 
 export interface ActionState {
   error?: string;
@@ -128,4 +129,132 @@ export async function restoreItem(form: FormData): Promise<void> {
 
   revalidatePath('/items');
   revalidatePath(`/items/${id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Purchases
+// ---------------------------------------------------------------------------
+
+/**
+ * Centavos as a string, not a number. bigint to number would be a silent
+ * precision cliff at 2^53, and D-079 bans the coercion outright; PostgREST
+ * accepts a numeric string for a bigint column.
+ */
+function cents(form: FormData, key: string): string {
+  const raw = text(form, key);
+  if (raw === '') return '0';
+  return Money.parse(raw).toCentavos().toString();
+}
+
+interface DraftLine {
+  item_id: string;
+  qty: string;
+  unit_id: string;
+  price: string;
+  weight: string | null;
+}
+
+function draftLines(form: FormData): DraftLine[] {
+  const items = form.getAll('line_item_id').map(String);
+  const qtys = form.getAll('line_qty').map(String);
+  const units = form.getAll('line_unit_id').map(String);
+  const prices = form.getAll('line_price').map(String);
+  const weights = form.getAll('line_weight').map(String);
+
+  const out: DraftLine[] = [];
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i] ?? '';
+    const qty = qtys[i] ?? '';
+    if (item === '' || qty === '') continue;
+    out.push({
+      item_id: item,
+      qty,
+      unit_id: units[i] ?? '',
+      price: prices[i] ?? '0',
+      weight: (weights[i] ?? '') === '' ? null : (weights[i] ?? null),
+    });
+  }
+  return out;
+}
+
+export async function createPurchase(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const org = await requireOrg();
+  const lines = draftLines(form);
+
+  if (lines.length === 0) {
+    return { error: 'Add at least one line before saving.' };
+  }
+  const purchaseDate = text(form, 'purchase_date');
+  if (purchaseDate === '') {
+    return { error: 'Enter the purchase date.' };
+  }
+
+  const supabase = await createClient();
+  const userId = (await supabase.auth.getUser()).data.user?.id;
+
+  const { data, error } = await supabase
+    .from('purchases')
+    .insert({
+      org_id: org.id,
+      supplier_id: optional(form, 'supplier_id'),
+      reference_no: optional(form, 'reference_no'),
+      purchase_date: purchaseDate,
+      supplier_shipping_cents: cents(form, 'supplier_shipping'),
+      duties_cents: cents(form, 'duties'),
+      other_landed_cost_cents: cents(form, 'other_landed_cost'),
+      discount_cents: cents(form, 'discount'),
+      landed_cost_base: text(form, 'landed_cost_base') || 'value',
+      notes: optional(form, 'notes'),
+      created_by: userId,
+    })
+    .select('id')
+    .single();
+
+  if (error !== null || data === null) {
+    if (error?.code === '23505' || /purchases_reference_unique/.test(error?.message ?? '')) {
+      return { error: 'That reference number is already used by another purchase.' };
+    }
+    return { error: error?.message ?? 'Could not save that purchase.' };
+  }
+
+  const { error: lineError } = await supabase.from('purchase_lines').insert(
+    lines.map((line) => ({
+      org_id: org.id,
+      purchase_id: data.id,
+      item_id: line.item_id,
+      qty_ordered: line.qty,
+      qty_received: line.qty,
+      purchase_unit_id: line.unit_id,
+      unit_price_cents: Money.parse(line.price).toCentavos().toString(),
+      line_weight: line.weight,
+      created_by: userId,
+    })),
+  );
+
+  if (lineError !== null) {
+    return { error: lineError.message };
+  }
+
+  revalidatePath('/purchases');
+  redirect(`/purchases/${data.id}` as Parameters<typeof redirect>[0]);
+}
+
+/**
+ * Receiving is one RPC because it has to be one transaction: every line becomes
+ * a ledger movement and every affected item's cached balance is rewritten from
+ * the same numbers. A client-side sequence of writes cannot hold the item lock
+ * that makes the weighted average safe (D-078).
+ */
+export async function receivePurchase(form: FormData): Promise<void> {
+  const id = text(form, 'id');
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('receive_purchase', { p_purchase_id: id });
+
+  if (error !== null) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath('/purchases');
+  revalidatePath(`/purchases/${id}`);
+  revalidatePath('/items');
 }

@@ -169,3 +169,61 @@ This is the single most valuable thing S2 produced. A test that reproduces the p
 The "set up your business" step comes from S13's onboarding. Every table is `org_id not null`, so there was nowhere to put an item until an organization existed and S2 could not be demonstrated at all. Only the name is collected; equipment, labour, overhead and channels stay in S13.
 
 The 240px sidebar was also built here rather than later, because every screen from S3 onward needs it and retrofitting it across forty frames is worse. Destinations that arrive in a later stage render as plain text with their stage number rather than as links — enforced, not remembered: typed routes will not compile a link to a route that does not exist.
+
+---
+
+## S3 — A purchase becomes stock with a derived cost
+
+**Done when:** the F-01 worked example produces ₱1.218545/g and ₱8.476778/pc to eight places; allocation previewed before saving; allocations reconcile to the extras total exactly; quantity base disabled with its reason on mixed units; `receive_purchase` is transactional under a concurrent-receipt test.
+
+**Status: four of five proven, one not testable here. Verified end to end against the live project.** 20 September 2026. 110 tests passing.
+
+| Requirement                                        | Evidence                                                                                                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-01 to eight places                               | `1.21854500` and `8.47677778`, from allocations of ₱137.09 and ₱42.91 landing the lines at ₱2,437.09 and ₱762.91                                          |
+| Allocation previewed before saving                 | The New purchase aside recomputes on every keystroke from the same `Money.allocate` the receive path uses                                                 |
+| Allocations reconcile exactly                      | Seven awkward splits asserted, including the residual-centavo cases                                                                                       |
+| Quantity base disabled with its reason             | _"Allocate by quantity is unavailable because this purchase mixes grams and pieces."_ Refused by the database and greyed out with that reason in the form |
+| `receive_purchase` transactional under concurrency | **Not testable on PGlite**, which is a single connection. See below                                                                                       |
+
+F-02 is proven too, though it belongs to S4's ledger: two receipts of one item produce ₱1.20308261 per gram across 2,300 g, and a stock value of ₱2,767.09 — the spec's figures exactly. Two lines naming the same item on one purchase apply in sequence, so the second sees the average the first produced.
+
+### The concurrency gap, stated plainly
+
+PGlite is one connection, so two simultaneous receipts cannot be issued. What is proven: the purchase row is locked `for update` before anything else, the status check then refuses a second receipt outright, and every item lock is taken up front in `id` order so two receipts touching the same items queue rather than deadlock.
+
+What is not proven is that those locks behave as intended under genuine parallelism. That needs a real Postgres with two connections, and it is the second thing on the list — after S14's Playwright work — that argues for the Node upgrade and a local Supabase. Recorded rather than quietly skipped.
+
+### One rule, two implementations, pinned together
+
+The allocation happens twice: in `allocate_cents()` when a purchase is received, and in `Money.allocate` for the preview shown before anything is saved. A preview that disagreed with what gets saved would be worse than no preview, so a test runs seven cases through both and asserts identical output, plus that each reconciles to the total.
+
+### A bug the ledger ordering was hiding
+
+`rebuild_item_balances()` picked each item's latest movement with `order by occurred_at desc, id desc`. Both parts are wrong. `occurred_at` is business time, so every movement from a purchase dated 16 September carries the same timestamp; `created_at` would tie too, because `now()` is transaction-stable. That left a random uuid deciding which row was "latest" — so the rebuild could reproduce a mid-transaction balance and disagree with the cache.
+
+Found by the test asserting rebuild equals cache, which failed on a purchase with two lines. `inventory_movements` now carries `seq bigint generated always as identity`: an append-only ledger's truth is the order it was appended in, and that is now what it is ordered by.
+
+### The ledger cannot be written by hand
+
+`inventory_movements` has a select policy and nothing else — no insert, update or delete policy at all, and only `select` granted. Rows are written solely by `receive_purchase`, which is security definer. The cache and the ledger therefore cannot be made to disagree by anything the client does, which is asserted directly: an insert, an update and a delete are each refused.
+
+### Another D-079 violation, caught by my own lint
+
+Two `Number(...)` coercions in the purchase actions, converting bigint centavos for the insert. `bigint` to `number` is a silent precision cliff at 2^53. Centavos are passed as strings now; PostgREST accepts a numeric string for a bigint column.
+
+### Verified live, not only in tests
+
+Built the worked example through the interface against Supabase project `wdluhlpjvjwfyytvduhs`.
+
+**Before saving**, the New purchase aside showed ₱137.09 against PLA Basic Filament and ₱42.91 against Mechanical Switch, "Allocated ₱180.00, which matches exactly", and the per-unit figures ₱1.218545 / g and ₱8.476778 / pc. That is the preview requirement met literally: the numbers appear before anything is written.
+
+**After receiving**, the stored figures are the same numbers: line totals ₱2,300.00 and ₱720.00, added costs ₱137.09 and ₱42.91, landed ₱2,437.09 and ₱762.91, unit costs ₱1.218545 / g and ₱8.476778 / pc. The purchase closed to editing and the Items list shows 2,000 g and 90 pc on hand at those costs, valued ₱2,437.09 and ₱762.91.
+
+The status badges came out right off each item's own reorder point without being asked to: the switch reads **Low** at 90 against a reorder point of 120, the filament **In stock** at 2,000 against 500. The list shows the unit cost at two places and the detail at six, which is the display rule rather than a coincidence.
+
+**Two defects the live walkthrough found:**
+
+The preview threw `[DecimalError] Invalid argument` on the form's **first render**. `Money.parse(extras.shipping ?? '0')` looks safe and is not: an untouched input is `''`, which is neither null nor undefined, so `??` passes it straight through. The most likely input the preview will ever receive was the one that crashed it. Empty now reads as zero, and three tests cover the untouched, empty-line and partly-typed states.
+
+A missing space rendered "₱1.218545 / gfrom ₱2,437.09". Cosmetic, and the sort of thing only reading the real output catches.
