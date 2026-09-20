@@ -117,7 +117,7 @@ function Item({ item, active }: { item: Nav; active: boolean }) {
     <Link
       href={item.href}
       aria-current={active ? 'page' : undefined}
-      className={`${shared} transition-colors duration-[120ms] ease-out ${
+      className={`${shared} transition-colors duration-fast ease-out ${
         active
           ? 'bg-surface-accent font-medium text-accent-text'
           : 'text-text-secondary hover:bg-surface-sunken'

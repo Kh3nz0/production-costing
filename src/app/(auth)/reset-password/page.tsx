@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 import { ResetPasswordForm } from './reset-password-form';
 
 export const metadata = { title: 'Choose a new password — Production Costing' };
@@ -20,12 +20,7 @@ export default async function ResetPasswordPage({
         <p className="text-body mt-2 text-text-secondary">
           Reset links are valid for one hour. Request a new one and it will arrive in a moment.
         </p>
-        <Link
-          href="/forgot-password"
-          className="text-body mt-6 inline-flex h-control-lg w-full items-center justify-center rounded-control bg-accent px-5 font-medium text-text-inverse transition-colors duration-[120ms] ease-out hover:bg-accent-hover"
-        >
-          Send a new link
-        </Link>
+        <ButtonLink href="/forgot-password">Send a new link</ButtonLink>
       </>
     );
   }

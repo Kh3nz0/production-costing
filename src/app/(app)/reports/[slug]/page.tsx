@@ -81,7 +81,7 @@ export default async function ReportPage({
         </label>
         <button
           type="submit"
-          className="text-body-sm h-control-md rounded-control bg-accent px-4 font-medium text-white"
+          className="text-body-sm h-control-md rounded-control bg-accent px-4 font-medium text-text-inverse"
         >
           Apply
         </button>

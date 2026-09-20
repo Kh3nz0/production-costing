@@ -170,7 +170,7 @@ export function PurchaseForm({
                         setRows((r) => (r.length === 1 ? r : r.filter((x) => x.key !== row.key)))
                       }
                       disabled={rows.length === 1}
-                      className="text-body-sm h-control-md rounded-control px-3 text-text-secondary transition-colors duration-[120ms] hover:bg-border-strong disabled:opacity-40"
+                      className="text-body-sm h-control-md rounded-control px-3 text-text-secondary transition-colors duration-fast hover:bg-border-strong disabled:opacity-40"
                     >
                       Remove
                     </button>

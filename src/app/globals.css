@@ -77,6 +77,11 @@
   --color-brand-bloop-subtle: #f8e7eb;
 
   /* Space. The Figma scale is not linear: space-6 is 24 and space-7 is 32. */
+  /* Motion. One duration, used by every interactive transition. It was written
+     as duration-[120ms] in twenty places, which is a value pretending to be a
+     token: changing the system's feel meant twenty edits and a grep. */
+  --duration-fast: 120ms;
+
   --spacing-0: 0px;
   --spacing-1: 4px;
   --spacing-2: 8px;

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 import { formatPercent, toDecimal } from '@/lib/decimal';
 import { Money } from '@/lib/money';
 import { requireOrg } from '@/lib/org';
@@ -22,12 +22,7 @@ export default async function SalesPage() {
             What you sold and what you actually kept.
           </p>
         </div>
-        <Link
-          href="/sales/new"
-          className="text-body-sm h-control-md inline-flex items-center rounded-control bg-accent px-4 font-medium text-white"
-        >
-          Record a sale
-        </Link>
+        <ButtonLink href="/sales/new">Record a sale</ButtonLink>
       </div>
 
       {sales.length === 0 ? (

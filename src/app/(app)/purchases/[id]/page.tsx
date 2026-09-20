@@ -67,7 +67,7 @@ export default async function PurchasePage({ params }: { params: Promise<{ id: s
             <input type="hidden" name="id" value={purchase.id} />
             <button
               type="submit"
-              className="text-body inline-flex h-control-lg items-center rounded-control bg-accent px-5 font-medium text-text-inverse transition-colors duration-[120ms] ease-out hover:bg-accent-hover"
+              className="text-body inline-flex h-control-lg items-center rounded-control bg-accent px-5 font-medium text-text-inverse transition-colors duration-fast ease-out hover:bg-accent-hover"
             >
               Receive now
             </button>

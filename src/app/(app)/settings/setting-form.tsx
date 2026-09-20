@@ -31,7 +31,7 @@ export function SettingForm({
       <button
         type="submit"
         disabled={pending}
-        className="text-body-sm mt-5 rounded-control bg-accent px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="text-body-sm mt-5 rounded-control bg-accent px-4 py-2 font-medium text-text-inverse disabled:opacity-50"
       >
         {pending ? 'Saving…' : 'Save'}
       </button>

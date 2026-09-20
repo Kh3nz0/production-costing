@@ -42,7 +42,7 @@ export default async function InventoryPage({
       <div className="mt-4">
         <Link
           href={lowOnly ? '/inventory' : '/inventory?low=1'}
-          className={`text-body-sm rounded-pill px-3 py-1.5 transition-colors duration-[120ms] ${
+          className={`text-body-sm rounded-pill px-3 py-1.5 transition-colors duration-fast ${
             lowOnly
               ? 'bg-surface-accent font-medium text-accent-text'
               : 'bg-surface text-text-secondary ring-1 ring-border-strong hover:bg-surface-sunken'

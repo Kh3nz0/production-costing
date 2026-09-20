@@ -63,7 +63,7 @@ export default async function ValuationPage({
         </label>
         <button
           type="submit"
-          className="text-body h-control-md rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-[120ms] hover:bg-border-strong"
+          className="text-body h-control-md rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-fast hover:bg-border-strong"
         >
           Show
         </button>

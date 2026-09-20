@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 
 export default function NotFound() {
   return (
@@ -10,12 +10,7 @@ export default function NotFound() {
           The link may be out of date, or the record may have been archived. Nothing has been
           changed.
         </p>
-        <Link
-          href="/dashboard"
-          className="text-body mt-6 inline-flex h-control-md items-center justify-center rounded-control bg-accent px-4 font-medium text-text-inverse transition-colors duration-[120ms] ease-out hover:bg-accent-hover"
-        >
-          Go to the dashboard
-        </Link>
+        <ButtonLink href="/dashboard">Go to the dashboard</ButtonLink>
       </main>
     </div>
   );

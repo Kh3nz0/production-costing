@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 import { formatPercent, formatRate, toDecimal } from '@/lib/decimal';
 import { requireOrg } from '@/lib/org';
 import { listRuns } from '@/lib/runs';
@@ -42,12 +43,7 @@ export default async function ProductionPage({
             What you made, what it actually cost, and what went wrong.
           </p>
         </div>
-        <Link
-          href="/production/new"
-          className="text-body-sm h-control-md inline-flex items-center rounded-control bg-accent px-4 font-medium text-white"
-        >
-          Start a run
-        </Link>
+        <ButtonLink href="/production/new">Start a run</ButtonLink>
       </div>
 
       <nav className="mt-6 flex flex-wrap gap-2">

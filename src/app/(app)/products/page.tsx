@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 import { requireOrg } from '@/lib/org';
 import { getProduct, getProductCost, listProducts } from '@/lib/products';
 import { formatCalculationAmount, toDecimal } from '@/lib/decimal';
@@ -36,12 +37,7 @@ export default async function ProductsPage({
             What you make and sell, and what each one costs you.
           </p>
         </div>
-        <Link
-          href="/products/new"
-          className="inline-flex h-control-md items-center rounded-control bg-accent px-4 text-body font-medium text-text-inverse hover:bg-accent-hover"
-        >
-          New product
-        </Link>
+        <ButtonLink href="/products/new">New product</ButtonLink>
       </div>
       <form method="get" className="mt-6 flex max-w-[520px] gap-2">
         <label className="sr-only" htmlFor="product-search">

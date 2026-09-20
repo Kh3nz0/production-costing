@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 import { requireOrg } from '@/lib/org';
 import { listItems } from '@/lib/items';
 import { itemTypeLabel, stockStatus, TYPE_FILTERS, type ItemRow } from '@/lib/item-types';
@@ -61,12 +62,7 @@ export default async function ItemsPage({
           >
             Import items
           </span>
-          <Link
-            href="/items/new"
-            className="text-body inline-flex h-control-md items-center rounded-control bg-accent px-4 font-medium text-text-inverse transition-colors duration-[120ms] ease-out hover:bg-accent-hover"
-          >
-            New item
-          </Link>
+          <ButtonLink href="/items/new">New item</ButtonLink>
         </div>
       </div>
 
@@ -85,7 +81,7 @@ export default async function ItemsPage({
         {showArchived ? <input type="hidden" name="archived" value="1" /> : null}
         <button
           type="submit"
-          className="text-body h-control-md rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-[120ms] hover:bg-border-strong"
+          className="text-body h-control-md rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-fast hover:bg-border-strong"
         >
           Search
         </button>
@@ -99,7 +95,7 @@ export default async function ItemsPage({
               key={filter.value}
               href={href({ type: filter.value })}
               aria-current={isActive ? 'true' : undefined}
-              className={`text-body-sm rounded-pill px-3 py-1.5 transition-colors duration-[120ms] ${
+              className={`text-body-sm rounded-pill px-3 py-1.5 transition-colors duration-fast ${
                 isActive
                   ? 'bg-surface-accent font-medium text-accent-text'
                   : 'bg-surface text-text-secondary ring-1 ring-border-strong hover:bg-surface-sunken'
@@ -111,7 +107,7 @@ export default async function ItemsPage({
         })}
         <Link
           href={href({ archived: showArchived ? '' : '1' })}
-          className={`text-body-sm ml-auto rounded-pill px-3 py-1.5 transition-colors duration-[120ms] ${
+          className={`text-body-sm ml-auto rounded-pill px-3 py-1.5 transition-colors duration-fast ${
             showArchived
               ? 'bg-surface-accent font-medium text-accent-text'
               : 'bg-surface text-text-secondary ring-1 ring-border-strong hover:bg-surface-sunken'

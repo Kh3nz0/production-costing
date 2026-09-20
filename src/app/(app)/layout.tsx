@@ -36,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <form action={signOut} className="ml-auto">
             <button
               type="submit"
-              className="text-body-sm h-control-md rounded-control px-3 text-text-secondary transition-colors duration-[120ms] hover:bg-surface-sunken"
+              className="text-body-sm h-control-md rounded-control px-3 text-text-secondary transition-colors duration-fast hover:bg-surface-sunken"
             >
               Sign out
             </button>

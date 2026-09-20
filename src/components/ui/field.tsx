@@ -35,7 +35,7 @@ export function Field({ label, helper, error, className = '', ...rest }: FieldPr
           'border',
           error !== undefined ? 'border-danger' : 'border-border-control',
           'placeholder:text-text-tertiary',
-          'transition-colors duration-[120ms] ease-out',
+          'transition-colors duration-fast ease-out',
           'disabled:bg-border disabled:text-text-tertiary',
           className,
         ]

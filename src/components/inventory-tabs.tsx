@@ -16,7 +16,7 @@ export function InventoryTabs({ current }: { current: (typeof TABS)[number]['hre
             key={tab.href}
             href={tab.href}
             aria-current={active ? 'page' : undefined}
-            className={`text-body px-4 py-2.5 transition-colors duration-[120ms] ${
+            className={`text-body px-4 py-2.5 transition-colors duration-fast ${
               active
                 ? 'border-b-2 border-accent font-medium text-text-primary'
                 : 'text-text-secondary hover:text-text-primary'
@@ -42,13 +42,13 @@ export function InventoryHeader() {
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href="/inventory/adjust"
-          className="text-body inline-flex h-control-md items-center rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-[120ms] hover:bg-border-strong"
+          className="text-body inline-flex h-control-md items-center rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-fast hover:bg-border-strong"
         >
           Adjust stock
         </Link>
         <Link
           href="/inventory/adjust?mode=opening"
-          className="text-body inline-flex h-control-md items-center rounded-control bg-accent px-4 font-medium text-text-inverse transition-colors duration-[120ms] hover:bg-accent-hover"
+          className="text-body inline-flex h-control-md items-center rounded-control bg-accent px-4 font-medium text-text-inverse transition-colors duration-fast hover:bg-accent-hover"
         >
           Record opening balances
         </Link>

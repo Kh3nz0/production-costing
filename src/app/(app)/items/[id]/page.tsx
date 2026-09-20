@@ -70,7 +70,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
           <input type="hidden" name="id" value={item.id} />
           <button
             type="submit"
-            className="text-body h-control-md rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-[120ms] hover:bg-border-strong"
+            className="text-body h-control-md rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-fast hover:bg-border-strong"
           >
             {item.archived_at === null ? 'Archive item' : 'Restore item'}
           </button>

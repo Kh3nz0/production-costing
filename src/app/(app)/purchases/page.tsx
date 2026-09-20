@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button-link';
 import { requireOrg } from '@/lib/org';
 import { listPurchases } from '@/lib/purchases';
 import { PURCHASE_STATUS_LABEL } from '@/lib/purchase-types';
@@ -25,12 +26,7 @@ export default async function PurchasesPage() {
             What you bought, what it cost you, and what that made each item worth.
           </p>
         </div>
-        <Link
-          href="/purchases/new"
-          className="text-body inline-flex h-control-md items-center rounded-control bg-accent px-4 font-medium text-text-inverse transition-colors duration-[120ms] ease-out hover:bg-accent-hover"
-        >
-          New purchase
-        </Link>
+        <ButtonLink href="/purchases/new">New purchase</ButtonLink>
       </div>
 
       {error !== null ? (
