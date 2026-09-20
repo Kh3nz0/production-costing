@@ -270,3 +270,21 @@ The Adjust stock screen offers four options — Stock count, Damage, Waste, Corr
 **Two different minus signs sat in adjacent columns.** The movements table showed `−60 g` with a real minus and `-₱73.11` with a hyphen, because `Money.format` used ASCII. Every display formatter now uses U+2212; `toJSON` keeps the hyphen, because that is a data value rather than a display one (D-120).
 
 **And fixing that surfaced a third:** `formatRate(-1.5)` produced `₱−1.50`, with the sign inside the currency symbol. The peso was being prefixed to digits that carried their own minus. A test written for the second defect caught it.
+
+---
+
+## S5 — Rates exist, are dated, are never overwritten
+
+**Status: done.** 20 September 2026. Migration `0006_dated_rates.sql` is live. The Business, Equipment, Utility rates, Labour, Overhead and Sales channels settings routes are built. 137 tests pass.
+
+PGlite applies the migration verbatim. Tests cover three effective dates for equipment, utility, labour, overhead and channel fees; equipment rates remain unchanged after the equipment purchase price changes; direct edits to version rows are refused. The equipment calculation counts annual maintenance and repairs across the chosen recovery period (D-061). Overhead category lines and their derived pool and rate save in one RPC (D-121); the F-15 example yields ₱95.00 per attended hour from ₱9,500 and 100 hours.
+
+The route builds with `next build --webpack`. The standard Turbopack build is blocked here by an internal process port binding error; it has not provided a build verdict.
+
+Live migration 0006 was reported successful by the owner on 20 September. The live PostgREST API recognizes all ten new tables and the three rate functions; anonymous requests to each returned 401. Currency editing in Business is temporarily read-only because historical purchase and stock rows have no currency snapshot (D-122); changing the organization code would relabel old amounts.
+
+The owner supplied screenshots of the signed-in Business and Equipment pages after 0006. Both render without clipping at desktop width. Business shows the Bloop values and the currency explanation. Equipment showed its add form and the correct empty history state before the first save.
+
+The live owner-session walkthrough then saved an equipment rate of ₱12.50/hour effective 1 January from a ₱50,000 sample price, 4,000 hours and zero allowances. The screenshot exposed F-48: the history showed only `12.5`, so the inputs could not be checked from the page. The revised history now shows currency, per-hour units, the stored 8-place rate and an expandable input list. After correcting the equipment price to the documented ₱48,000 sample and adding a 2 January version, the rendered page shows **₱12.00/hour In force** and the old **₱12.50/hour Superseded**, with both sets of inputs still readable. The old numeric rate did not move when the equipment price changed.
+
+The live equipment is labelled `SAMPLE DATA`. The owner confirmed that sample figures are the intended data until the system is built and real figures can be entered. The short sample name can be made more descriptive later; it does not block the S5 rate and history criteria.

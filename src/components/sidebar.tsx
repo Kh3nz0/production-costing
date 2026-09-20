@@ -39,7 +39,10 @@ import {
  * of step with what is actually built.
  */
 
-type Built = { href: '/dashboard' | '/items' | '/purchases' | '/inventory'; stage?: never };
+type Built = {
+  href: '/dashboard' | '/items' | '/purchases' | '/inventory' | '/settings';
+  stage?: never;
+};
 type Unbuilt = { href?: never; stage: string };
 
 interface NavItem {
@@ -71,7 +74,7 @@ const UNDERSTAND: Nav[] = [
 
 const SETTINGS: Nav = {
   label: 'Settings',
-  stage: 'S5',
+  href: '/settings',
   outline: AdjustmentsHorizontalIcon,
   solid: AdjustmentsHorizontalSolid,
 };
@@ -149,7 +152,7 @@ export function Sidebar({ email }: { email: string }) {
       <Group label="Understand" items={UNDERSTAND} current={current} />
 
       <div className="mt-auto pt-6">
-        <Item item={SETTINGS} active={false} />
+        <Item item={SETTINGS} active={current?.startsWith('/settings') ?? false} />
         <p className="text-caption truncate px-3 pt-2 text-text-tertiary" title={email}>
           {email}
         </p>
