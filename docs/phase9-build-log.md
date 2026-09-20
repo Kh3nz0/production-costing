@@ -359,7 +359,7 @@ No existing data needed repair: no purchase had ever been received against uncos
 
 **Done when:** margin and markup together; the trap example shows ₱100.00 and ₱84.00; the back-solve reproduces ₱154.88, ₱166.54, ₱185.05; **both** break-evens show ₱86.65 and ₱99.92; expected contribution margin shows 48.0% beside the 40% target; a 100% margin is refused.
 
-**Status: built, awaiting the live walkthrough.** 191 tests pass, including all six clauses above as separate cases.
+**Status: done.** 20 September 2026. 191 tests pass, including all six clauses above as separate cases, and every figure was confirmed on the rendered page in a live owner session.
 
 `src/lib/pricing.ts` holds F-08, F-09 and F-10. It is pure, exact, and refuses rather than returning a silent null: a margin at or above 100%, fees at or above 100%, a 100% discount each come back with the sentence the screen shows. The one idea the module exists to hold on to is that a price is built on the **full** cost, because a price has to recover overhead, while the contribution margin a sale later reports subtracts only the **production** cost, because overhead is never capitalised into stock (D-008). The two figures differ on purpose and the screen shows both.
 
@@ -376,3 +376,24 @@ Margin is measured against **net revenue**, not the list price. With a 10% disco
 `0010_pricing_snapshots.sql` adds the snapshot table: both costs, the price, both break-evens, and the channel's terms **by value** in `inputs`, because an id alone would not survive the fee version being superseded, which is exactly when the question gets asked. Write-once by construction — select and nothing else is granted, so an attempt to edit one is refused at the grant rather than silently changing zero rows (the failure F-37 was raised for). Snapshots are written only by `save_pricing_snapshot`, called from a server action that recomputes every figure from the product's own cost: what the browser displayed is not evidence, and a snapshot exists to be evidence.
 
 **Writing the snapshot tests found F-60**, a cross-tenant write reachable through four functions from S3 and S4. That is recorded above, under 0011.
+
+### The live walkthrough
+
+`0010` applied live, confirmed by the owner. The Pricing tab was driven at a 40% target against the live keychain, whose costs are ₱93.25 full and ₱80.90 production.
+
+| Figure                | Live                                      | Reconciles as                      |
+| --------------------- | ----------------------------------------- | ---------------------------------- |
+| Price at 40% margin   | ₱155.42                                   | 93.25 ÷ 0.60                       |
+| Price at 40% markup   | ₱130.55                                   | 93.25 × 1.40                       |
+| Apart                 | ₱24.87                                    | with both percentages on both rows |
+| Shopee at 7%          | ₱167.11                                   | 155.4167 ÷ 0.93                    |
+| Expected contribution | 47.9%                                     | (155.41 − 80.90) ÷ 155.41          |
+| Loses money below     | ₱86.99                                    | 80.90 ÷ 0.93                       |
+| Covers overhead above | ₱100.27                                   | 93.25 ÷ 0.93                       |
+| A 100% margin         | refused, with the sentence the spec gives |
+
+These are the spec's ₱154.88 / ₱166.54 / ₱86.65 / ₱99.92 carried onto the live product, whose filament average differs by the one input recorded in D-125. Every relationship holds.
+
+A snapshot was saved against Shopee and read back as 2026-09-20 · ₱93.25 · ₱167.11 · 40.0%. Live, the table answers 401 to an anonymous read and the function 404 to an anonymous call.
+
+**One defect, and it was the third of its kind:** the sales-channel history showed the commission and neither the payment fee nor the fixed fee, though the back-solve divides by all three (F-61). A 2% payment fee was stored and unreadable. After F-55 and F-56, checking that a newly entered rate can be read back off the page is now the first thing done when any settings screen gains a rate.
