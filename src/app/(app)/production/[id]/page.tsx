@@ -170,11 +170,43 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
                   </tr>
                 </thead>
                 <tbody>
-                  {run.lines.map((line) => {
+                  {run.lines.flatMap((line) => {
                     const ref =
                       line.ref_item_id ?? line.ref_equipment_id ?? line.ref_activity_id ?? '';
                     const label = labels.get(ref);
-                    return (
+
+                    // A machine line carries its own electricity, because the
+                    // ledger has no electricity line to put it on. Left as one
+                    // row it is the only row on the page whose rate times
+                    // quantity does not equal its cost. Split it: the machine
+                    // part is computed, and the remainder is the electricity,
+                    // so the two still add to exactly what was stored.
+                    let electricity: { amount: Money; detail: string } | null = null;
+                    if (
+                      line.line_type === 'machine_time' &&
+                      line.cost_cents !== null &&
+                      line.unit_cost_at_run !== null &&
+                      line.actual_qty !== null
+                    ) {
+                      const machinePart = Money.fromDecimal(
+                        toDecimal(line.actual_qty).times(toDecimal(line.unit_cost_at_run)),
+                      );
+                      const whole = Money.fromCentavos(BigInt(line.cost_cents));
+                      const remainder = whole.minus(machinePart);
+                      if (!remainder.isZero()) {
+                        const snapshot = run.rate_snapshot?.electricity as
+                          { rate_per_kwh?: string | number; watts?: string | number } | undefined;
+                        electricity = {
+                          amount: remainder,
+                          detail:
+                            snapshot?.watts !== undefined && snapshot?.rate_per_kwh !== undefined
+                              ? `${formatQuantity(String(snapshot.watts))} W at ${formatRate(String(snapshot.rate_per_kwh))} per kWh`
+                              : 'derived from the machine hours',
+                        };
+                      }
+                    }
+
+                    const rows = [
                       <tr key={line.id} className="border-b border-border-subtle">
                         <td className={TD}>{label?.name ?? line.line_type}</td>
                         <td className={`${TD} text-right tabular-nums`}>
@@ -193,10 +225,38 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
                         <td className={`${TD} text-right tabular-nums`}>
                           {line.cost_cents === null
                             ? '—'
-                            : Money.fromCentavos(BigInt(line.cost_cents)).format()}
+                            : electricity === null
+                              ? Money.fromCentavos(BigInt(line.cost_cents)).format()
+                              : Money.fromCentavos(BigInt(line.cost_cents))
+                                  .minus(electricity.amount)
+                                  .format()}
                         </td>
-                      </tr>
-                    );
+                      </tr>,
+                    ];
+                    if (electricity !== null) {
+                      rows.push(
+                        <tr
+                          key={`${line.id}-electricity`}
+                          className="border-b border-border-subtle"
+                        >
+                          <td className={TD}>
+                            Electricity
+                            <span className="text-caption ml-2 text-text-tertiary">
+                              {electricity.detail}
+                            </span>
+                          </td>
+                          <td className={`${TD} text-right tabular-nums`}>—</td>
+                          <td className={`${TD} text-right tabular-nums`}>
+                            {line.actual_qty === null ? '—' : formatQuantity(line.actual_qty, 'h')}
+                          </td>
+                          <td className={`${TD} text-right tabular-nums`}>—</td>
+                          <td className={`${TD} text-right tabular-nums`}>
+                            {electricity.amount.format()}
+                          </td>
+                        </tr>,
+                      );
+                    }
+                    return rows;
                   })}
                 </tbody>
               </table>
