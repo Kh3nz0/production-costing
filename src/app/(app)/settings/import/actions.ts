@@ -74,7 +74,9 @@ export async function applyUpload(_previous: ImportState, data: FormData): Promi
     const fileName = String(data.get('file_name') ?? '') || null;
     if (csv === '') throw new Error('Run the check again before applying.');
 
-    const outcome = await applyImport(org.id, await userId(), templateCode, csv, fileName);
+    const outcome = await applyImport(org.id, await userId(), templateCode, csv, fileName, {
+      expectedWorkingHours: String(data.get('expected_working_hours') ?? ''),
+    });
     if ('orderError' in outcome) return { orderError: outcome.orderError, templateCode };
     if ('errors' in outcome) {
       return {

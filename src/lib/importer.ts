@@ -370,12 +370,27 @@ export async function recordBatch(
  * — the import calls it rather than writing the rows itself, so an imported
  * record goes through exactly the checks a typed one does.
  */
+const MULTI_ROW = ['04-purchases', '05-purchase-lines', '10-overhead', '12-bom-lines'];
+
+/**
+ * Options a template needs that its file does not carry.
+ *
+ * `10-overhead` is the only one: its columns are a category, an amount and a
+ * date, and an overhead rate also needs the working hours the pool is spread
+ * across. That number is not in the file, so it is asked for on the screen
+ * rather than guessed — a guessed denominator is a wrong rate on every product.
+ */
+export interface ApplyOptions {
+  expectedWorkingHours?: string;
+}
+
 export async function applyImport(
   orgId: string,
   userId: string,
   templateCode: string,
   csv: string,
   fileName: string | null,
+  options: ApplyOptions = {},
 ): Promise<
   | { batchId: string; created: number }
   | { orderError: string }
@@ -598,11 +613,20 @@ export async function applyImport(
         break;
       }
       default:
-        throw new Error(
-          `${templateCode} validates but does not apply yet. Its rows are multi-row transactions and are recorded in the build log as not built.`,
-        );
+        // The four multi-row templates are applied once, after this loop, not
+        // row by row. A purchase is a header plus its lines plus a receipt, and
+        // writing that one row at a time is what leaves half a purchase behind
+        // when row 40 fails.
+        break;
     }
-    created.push({ rowNumber, id });
+    if (id !== null) created.push({ rowNumber, id });
+  }
+
+  if (MULTI_ROW.includes(templateCode)) {
+    const ids = await applyMultiRow(db, orgId, templateCode, result, lookups, options);
+    for (const [index, id] of ids.entries()) {
+      created.push({ rowNumber: index + 2, id });
+    }
   }
 
   const batchId = await recordBatch(orgId, userId, result, {
@@ -624,4 +648,113 @@ export async function applyImport(
     if (error) throw new Error(error.message);
   }
   return { batchId, created: created.length };
+}
+
+/**
+ * The four templates whose rows are one transaction together.
+ *
+ * Names were already resolved by the dry run, so this turns each row into ids
+ * and amounts and hands the whole set to one database function. What comes back
+ * is the ids it created, in file order.
+ */
+async function applyMultiRow(
+  db: Awaited<ReturnType<typeof createClient>>,
+  orgId: string,
+  templateCode: string,
+  result: DryRunResult,
+  lookups: Lookups,
+  options: ApplyOptions,
+): Promise<(string | null)[]> {
+  const rows = result.rows.filter((row) => !isExampleRow(row));
+  // Centavos as a string, not a number: PostgREST accepts a numeric string for
+  // a bigint, and bigint to number is a silent precision cliff at 2^53 (F-41).
+  const money = (value: string) =>
+    value === '' ? '0' : Money.parse(value).toCentavos().toString();
+  const nullable = (value: string) => (value === '' ? null : value);
+
+  if (templateCode === '04-purchases') {
+    const payload = rows.map((row) => ({
+      reference_no: row.purchase_ref,
+      supplier_id: lookups.suppliers.get(key(row.supplier_name ?? '')) ?? null,
+      purchase_date: row.purchase_date,
+      shipping_cents: money(row.supplier_shipping_amount ?? ''),
+      duties_cents: money(row.duties_amount ?? ''),
+      other_cents: money(row.other_landed_cost_amount ?? ''),
+      discount_cents: money(row.discount_amount ?? ''),
+      vat_cents: money(row.vat_amount ?? ''),
+      landed_cost_base: nullable(row.landed_cost_allocation_base ?? '') ?? 'value',
+      payment_status: nullable(row.payment_status ?? '') ?? 'unpaid',
+      notes: row.notes ?? '',
+    }));
+    const { data, error } = await db.rpc('import_purchases', { p_org_id: orgId, p_rows: payload });
+    if (error) throw new Error(error.message);
+    return data as unknown as string[];
+  }
+
+  if (templateCode === '05-purchase-lines') {
+    const payload = rows.map((row) => {
+      const item = lookups.items.get(key(row.item_name ?? ''))!;
+      return {
+        purchase_id: lookups.purchases.get(key(row.purchase_ref ?? ''))!,
+        item_id: item.id,
+        qty_ordered: row.quantity_ordered,
+        qty_received: nullable(row.quantity_received ?? ''),
+        purchase_unit_id: lookups.units.get(key(row.purchase_unit ?? '')) ?? item.base_unit_id,
+        unit_price_cents: money(row.unit_price ?? ''),
+        line_discount_cents: money(row.line_discount_amount ?? ''),
+        notes: row.notes ?? '',
+      };
+    });
+    const { data, error } = await db.rpc('import_purchase_lines', {
+      p_org_id: orgId,
+      p_rows: payload,
+    });
+    if (error) throw new Error(error.message);
+    return data as unknown as string[];
+  }
+
+  if (templateCode === '10-overhead') {
+    if ((options.expectedWorkingHours ?? '') === '') {
+      throw new Error(
+        'This template needs the expected working hours per month, which the file does not carry. Enter it above and run the import again.',
+      );
+    }
+    const payload = rows.map((row) => ({
+      category: row.overhead_category,
+      amount_cents: money(row.monthly_amount ?? ''),
+      effective_from: nullable(row.effective_from ?? ''),
+      notes: row.notes ?? '',
+    }));
+    const { data, error } = await db.rpc('import_overhead', {
+      p_org_id: orgId,
+      p_rows: payload,
+      p_expected_hours: options.expectedWorkingHours,
+    });
+    if (error) throw new Error(error.message);
+    return [data as unknown as string];
+  }
+
+  // 12-bom-lines
+  const payload = rows.map((row) => {
+    const type = (row.line_type ?? '').toLowerCase();
+    const target = key(row.item_or_activity_or_equipment ?? '');
+    return {
+      product_id: lookups.items.get(key(row.product_name ?? ''))!.id,
+      line_type: type,
+      ref_item_id: lookups.items.get(target)?.id ?? null,
+      ref_equipment_id: type === 'machine_time' ? (lookups.equipment.get(target) ?? null) : null,
+      ref_activity_id: type === 'labour' ? (lookups.activities.get(target) ?? null) : null,
+      qty_per_unit: row.quantity_per_unit,
+      unit_id: lookups.units.get(key(row.unit ?? '')) ?? null,
+      // The file asks for a percentage; the column stores a fraction.
+      waste_rate:
+        (row.expected_waste_percent ?? '') === ''
+          ? '0'
+          : toDecimal(row.expected_waste_percent!).dividedBy(toDecimal('100')).toFixed(6),
+      notes: row.notes ?? '',
+    };
+  });
+  const { data, error } = await db.rpc('import_bom_lines', { p_org_id: orgId, p_rows: payload });
+  if (error) throw new Error(error.message);
+  return data as unknown as string[];
 }

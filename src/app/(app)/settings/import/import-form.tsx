@@ -131,6 +131,24 @@ export function ImportForm({ templates }: { templates: Template[] }) {
             Every row is checked again before anything is written, because a file can change between
             the check and the apply.
           </p>
+          {checked.templateCode === '10-overhead' ? (
+            <label className="text-caption mt-4 block max-w-form-sm text-text-secondary">
+              Expected working hours per month
+              <input
+                name="expected_working_hours"
+                type="number"
+                step="any"
+                min="0"
+                required
+                className={CONTROL}
+              />
+              <span className="text-caption mt-1 block text-text-tertiary">
+                This template has a category, an amount and a date, and an overhead rate also needs
+                the hours the pool is spread across. It is not in the file, so it is asked for here
+                rather than guessed &mdash; a guessed denominator is a wrong rate on every product.
+              </span>
+            </label>
+          ) : null}
           <div className="mt-4">
             <Button type="submit" size="lg" disabled={applying}>
               {applying ? 'Importing…' : `Import ${checked.wouldCreate ?? 0} rows`}
