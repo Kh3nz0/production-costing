@@ -83,3 +83,23 @@ describe('what a sale does with the awkward cases', () => {
     expect(marginsDiverge(result)).toBe(false);
   });
 });
+
+describe('a ratio against nothing is not a margin', () => {
+  it('reports no margin when the sale netted nothing or less', () => {
+    // −₱15.00 of net revenue against −₱15.00 of contribution divides out at
+    // exactly 100%, which reads as a triumph.
+    const result = saleResult([], {
+      shippingCharged: Money.parse('50.00'),
+      shippingPaid: Money.parse('65.00'),
+    });
+    expect(result.netRevenue.format()).toBe('−₱15.00');
+    expect(result.contributionProfit!.format()).toBe('−₱15.00');
+    expect(result.contributionMargin).toBeNull();
+    expect(result.grossMargin).toBeNull();
+  });
+
+  it('still reports a negative margin when money did arrive', () => {
+    const result = saleResult([{ ...KEYCHAIN, unitPrice: Money.parse('50.00') }], {});
+    expect(formatPercent(result.contributionMargin!)).toBe('−63.0%');
+  });
+});

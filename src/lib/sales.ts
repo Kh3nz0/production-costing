@@ -82,7 +82,7 @@ export function saleResult(lines: SaleLine[], costs: SaleCosts): SaleResult {
     cogs,
     grossProfit,
     grossMargin:
-      grossProfit === null || revenue.isZero()
+      grossProfit === null || !revenue.toDecimal().gt(0)
         ? null
         : grossProfit.toDecimal().dividedBy(revenue.toDecimal()),
     saleCosts,
@@ -90,8 +90,13 @@ export function saleResult(lines: SaleLine[], costs: SaleCosts): SaleResult {
     netRevenue,
     contributionProfit,
     // Measured against what actually reached you, not against the list price.
+    //
+    // Null when nothing reached you. A sale that nets −₱15.00 and loses ₱15.00
+    // divides out at exactly 100%, which reads as a triumph; every ratio
+    // against a non-positive denominator is a sentence about arithmetic rather
+    // than about the business (F-66).
     contributionMargin:
-      contributionProfit === null || netRevenue.isZero()
+      contributionProfit === null || !netRevenue.toDecimal().gt(0)
         ? null
         : contributionProfit.toDecimal().dividedBy(netRevenue.toDecimal()),
   };

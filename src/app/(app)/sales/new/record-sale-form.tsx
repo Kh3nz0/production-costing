@@ -244,8 +244,17 @@ export function RecordSaleForm({
                           />
                         </td>
                       ))}
-                      <td className="px-3 py-2 text-right text-body-sm tabular-nums text-text-primary">
-                        {Money.fromDecimal(total).format()}
+                      <td className="px-3 py-2 text-right text-body-sm tabular-nums">
+                        {/* A line with no product chosen is not part of the
+                            sale, so it must not show a total the panel above
+                            does not count (F-66). */}
+                        {item === undefined ? (
+                          <span className="text-text-tertiary">—</span>
+                        ) : (
+                          <span className="text-text-primary">
+                            {Money.fromDecimal(total).format()}
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-right">
                         {lines.length > 1 ? (
