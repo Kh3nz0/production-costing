@@ -228,3 +228,24 @@ describe('a negative reads the same everywhere it appears', () => {
     expect(Money.parse('-73.11').toJSON()).toBe('-73.11');
   });
 });
+
+describe('the two string forms are not interchangeable (F-68)', () => {
+  it('formats for display and serialises for data', () => {
+    const amount = Money.parse('6.00');
+    // format() and toString() are for people: grouped digits and a peso sign.
+    expect(amount.format()).toBe('₱6.00');
+    expect(amount.toString()).toBe('₱6.00');
+    // toJSON() is for anything that will be parsed again — a numeric input, a
+    // CSV cell, a numeric column. A number input rejects the display form,
+    // renders empty, and submits nothing.
+    expect(amount.toJSON()).toBe('6.00');
+    expect(Number.isNaN(globalThis.Number(amount.toJSON()))).toBe(false);
+    expect(Number.isNaN(globalThis.Number(amount.format()))).toBe(true);
+  });
+
+  it('keeps an ASCII hyphen in the data form and a real minus in the display', () => {
+    const owed = Money.parse('-15.00');
+    expect(owed.format()).toBe('−₱15.00');
+    expect(owed.toJSON()).toBe('-15.00');
+  });
+});

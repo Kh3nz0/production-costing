@@ -98,10 +98,13 @@ export function RecordSaleForm({
       ? null
       : Money.fromDecimal(revenueSoFar.timesExact(toDecimal(channel.paymentRate)));
 
+  // toJSON, not toString: toString is format(), which produces `₱6.00`. A
+  // number input rejects that, renders empty and submits nothing, so the panel
+  // showed a commission the saved sale never had (F-68).
   const commissionShown =
-    feesEdited || impliedCommission === null ? commission : impliedCommission.toString();
+    feesEdited || impliedCommission === null ? commission : impliedCommission.toJSON();
   const paymentFeeShown =
-    feesEdited || impliedPaymentFee === null ? paymentFee : impliedPaymentFee.toString();
+    feesEdited || impliedPaymentFee === null ? paymentFee : impliedPaymentFee.toJSON();
 
   const result = saleResult(saleLines, {
     commission: money(commissionShown),
