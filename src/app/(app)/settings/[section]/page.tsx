@@ -179,6 +179,43 @@ function history(
               <span className="text-text-secondary">
                 Recorded by you on {String(row.created_at).slice(0, 10)}
               </span>
+              {rateField === 'commission_rate' && (
+                // A channel's cut is commission plus payment fee plus a fixed
+                // amount per order, and the pricing back-solve uses all three.
+                // Showing only the commission leaves the other two stored and
+                // unreadable, which is F-55 and F-56 over again.
+                <details className="w-full text-text-secondary">
+                  <summary className="cursor-pointer text-accent-text">
+                    What this channel takes
+                  </summary>
+                  <dl className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                    <div>
+                      <dt>Commission</dt>
+                      <dd className="tabular-nums">{formatPercent(String(row.commission_rate))}</dd>
+                    </div>
+                    <div>
+                      <dt>Payment fee</dt>
+                      <dd className="tabular-nums">{formatPercent(String(row.payment_rate))}</dd>
+                    </div>
+                    <div>
+                      <dt>Fixed fee per order</dt>
+                      <dd className="tabular-nums">
+                        {Money.fromCentavos(BigInt(String(row.fixed_fee_cents))).format()}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Total percentage taken</dt>
+                      <dd className="tabular-nums">
+                        {formatPercent(
+                          toDecimal(String(row.commission_rate)).plus(
+                            toDecimal(String(row.payment_rate)),
+                          ),
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+                </details>
+              )}
               {rateField === 'rate' && (
                 // F-48 again, on the other derived rate. ₱95.00 per hour is a
                 // quotient, not an entry: without the pool and the hours beside
