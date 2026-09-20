@@ -48,7 +48,7 @@ export default async function ProductsPage({
           name="q"
           defaultValue={q}
           placeholder="Search name or SKU"
-          className="h-field min-w-0 flex-1 rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+          className="h-field min-w-0 flex-1 rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
         />
         <button
           type="submit"

@@ -37,7 +37,7 @@ function Select({
         required={required}
         value={value}
         onChange={onChange === undefined ? undefined : (e) => onChange(e.target.value)}
-        className="h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+        className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
       >
         {children}
       </select>

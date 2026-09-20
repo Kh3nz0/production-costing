@@ -28,7 +28,7 @@ export function ProductForm({ units }: { units: UnitOption[] }) {
               name="base_unit_id"
               required
               defaultValue=""
-              className="h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+              className="h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
             >
               <option value="">Choose a unit</option>
               {units.map((u) => (

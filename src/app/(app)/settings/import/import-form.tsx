@@ -7,7 +7,7 @@ import type { Template } from '@/lib/import-types';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
-  'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 export function ImportForm({ templates }: { templates: Template[] }) {
   const [checked, check, checking] = useActionState<ImportState, FormData>(validateUpload, {});

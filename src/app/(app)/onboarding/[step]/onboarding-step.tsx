@@ -8,7 +8,7 @@ import { Field } from '@/components/ui/field';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
-  'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -230,7 +230,7 @@ export function OnboardingStep({
           </Button>
           <Link
             href={onward as '/dashboard'}
-            className="text-body-sm h-control-md inline-flex items-center rounded-control border border-border-control px-4 text-text-primary"
+            className="text-body-sm h-control-md inline-flex items-center rounded-control border border-border-strong px-4 text-text-primary"
           >
             {state.saved === true ? 'Continue' : 'Skip for now'}
           </Link>

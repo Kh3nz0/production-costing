@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const TH = 'px-4 py-3 text-left text-caption font-medium text-text-secondary';
 const TD = 'px-4 py-3 text-body-sm text-text-primary';
 const DATE =
-  'h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 export default async function ReportPage({
   params,
@@ -87,13 +87,13 @@ export default async function ReportPage({
         </button>
         <Link
           href={`/reports/${slug}` as `/reports/${string}`}
-          className="text-body-sm h-control-md inline-flex items-center rounded-control border border-border-control px-4 text-text-primary"
+          className="text-body-sm h-control-md inline-flex items-center rounded-control border border-border-strong px-4 text-text-primary"
         >
           Clear
         </Link>
         <a
           href={exportHref}
-          className="text-body-sm h-control-md inline-flex items-center rounded-control border border-border-control px-4 text-text-primary"
+          className="text-body-sm h-control-md inline-flex items-center rounded-control border border-border-strong px-4 text-text-primary"
         >
           Export CSV
         </a>

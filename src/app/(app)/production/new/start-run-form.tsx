@@ -8,7 +8,7 @@ import { Field } from '@/components/ui/field';
 import { formatPercent, toDecimal } from '@/lib/decimal';
 
 const CONTROL =
-  'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 export function StartRunForm({
   products,

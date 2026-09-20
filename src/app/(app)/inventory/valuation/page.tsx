@@ -55,7 +55,7 @@ export default async function ValuationPage({
             type="date"
             name="as_of"
             defaultValue={asOfDate}
-            className="h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+            className="h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
           />
           <span className="text-caption text-text-tertiary">
             Shows what your stock was worth on that date, using the costs that applied then.

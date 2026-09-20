@@ -139,7 +139,7 @@ export default async function ProductPricingPage({
                   step="any"
                   min="0"
                   defaultValue={marginPercent}
-                  className="h-field w-28 rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+                  className="h-field w-28 rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
                 />
                 <span className="text-body text-text-secondary">%</span>
               </span>
@@ -153,7 +153,7 @@ export default async function ProductPricingPage({
                   step="any"
                   min="0"
                   defaultValue={discountPercent}
-                  className="h-field w-28 rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+                  className="h-field w-28 rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
                 />
                 <span className="text-body text-text-secondary">%</span>
               </span>
@@ -164,7 +164,7 @@ export default async function ProductPricingPage({
                 type="date"
                 name="on"
                 defaultValue={on}
-                className="ml-2 h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+                className="ml-2 h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
               />
             </label>
             <button

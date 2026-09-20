@@ -53,7 +53,7 @@ export default async function ProductCostPage({
             type="date"
             name="on"
             defaultValue={on}
-            className="ml-2 h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+            className="ml-2 h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
           />
         </label>
         <button

@@ -89,7 +89,7 @@ export function PurchaseForm({
               <select
                 id="supplier_id"
                 name="supplier_id"
-                className="h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+                className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
               >
                 <option value="">No supplier</option>
                 {suppliers.map((s) => (
@@ -130,7 +130,7 @@ export function PurchaseForm({
                       name="line_item_id"
                       value={row.itemId}
                       onChange={(e) => update(row.key, { itemId: e.target.value })}
-                      className="h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+                      className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
                     >
                       <option value="">Choose an item</option>
                       {items.map((i) => (

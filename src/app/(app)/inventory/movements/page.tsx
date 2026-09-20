@@ -39,7 +39,7 @@ export default async function MovementsPage({
           <select
             name="type"
             defaultValue={params.type ?? ''}
-            className="h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+            className="h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
           >
             <option value="">All types</option>
             {(Object.keys(MOVEMENT_LABEL) as MovementType[]).map((t) => (
@@ -55,7 +55,7 @@ export default async function MovementsPage({
             type="date"
             name="from"
             defaultValue={params.from ?? ''}
-            className="h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+            className="h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -64,7 +64,7 @@ export default async function MovementsPage({
             type="date"
             name="to"
             defaultValue={params.to ?? ''}
-            className="h-field rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+            className="h-field rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
           />
         </label>
         <button

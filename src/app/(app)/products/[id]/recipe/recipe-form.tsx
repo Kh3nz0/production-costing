@@ -34,7 +34,7 @@ const ITEM_TYPES: Record<string, string[]> = {
   subassembly: ['subassembly', 'finished_product'],
 };
 const CONTROL =
-  'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 function fromSaved(line: RecipeLine): DraftLine {
   return {

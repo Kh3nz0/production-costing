@@ -95,7 +95,7 @@ export function AdjustForm({
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
           required
-          className="h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary"
+          className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
         >
           <option value="">Choose an item</option>
           {choices.map((i) => (

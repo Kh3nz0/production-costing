@@ -67,7 +67,7 @@ function input(
         readOnly={options.readOnly}
         defaultValue={options.defaultValue}
         step={options.type === 'number' ? 'any' : undefined}
-        className={`h-field rounded-control border border-border-control px-3 ${options.readOnly ? 'bg-surface-sunken text-text-secondary' : 'bg-surface text-text-primary'}`}
+        className={`h-field rounded-control border border-border-strong px-3 ${options.readOnly ? 'bg-surface-sunken text-text-secondary' : 'bg-surface text-text-primary'}`}
       />
       {options.hint && <span className="text-caption text-text-secondary">{options.hint}</span>}
     </label>
@@ -89,7 +89,7 @@ function picker(name: string, label: string, rows: Row[]) {
       <select
         name={name}
         required
-        className="h-field rounded-control border border-border-control bg-surface px-3"
+        className="h-field rounded-control border border-border-strong bg-surface px-3"
       >
         <option value="">Choose</option>
         {rows.map((row) => (

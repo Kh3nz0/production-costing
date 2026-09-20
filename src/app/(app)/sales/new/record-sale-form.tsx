@@ -14,7 +14,7 @@ import type { SellableItem } from '@/lib/runs';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
-  'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 const TH = 'px-3 py-2 text-left text-caption font-medium text-text-secondary';
 
 interface DraftLine {
@@ -243,7 +243,7 @@ export function RecordSaleForm({
                                 ),
                               )
                             }
-                            className="h-field w-28 rounded-control border border-border-control bg-surface px-3 text-right text-body tabular-nums text-text-primary"
+                            className="h-field w-28 rounded-control border border-border-strong bg-surface px-3 text-right text-body tabular-nums text-text-primary"
                           />
                         </td>
                       ))}

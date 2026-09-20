@@ -32,7 +32,7 @@ export function ReverseRunForm({ runId }: { runId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="text-body-sm h-control-md self-start rounded-control border border-border-control px-4 font-medium text-danger disabled:opacity-50"
+          className="text-body-sm h-control-md self-start rounded-control border border-border-strong px-4 font-medium text-danger disabled:opacity-50"
         >
           {pending ? 'Reversing…' : 'Reverse this run'}
         </button>

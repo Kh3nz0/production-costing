@@ -9,7 +9,7 @@ import { formatCalculationAmount, formatQuantity, toDecimal } from '@/lib/decima
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
-  'h-field w-full rounded-control border border-border-control bg-surface px-3 text-body text-text-primary';
+  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 const TH = 'px-4 py-3 text-left text-caption font-medium text-text-secondary';
 const TD = 'px-4 py-3 text-body-sm text-text-primary';
 
@@ -128,7 +128,7 @@ export function RecordRunForm({
                       min="0"
                       value={actual[line.id] ?? ''}
                       onChange={(e) => setActual((all) => ({ ...all, [line.id]: e.target.value }))}
-                      className="h-field w-40 rounded-control border border-border-control bg-surface px-3 text-right text-body tabular-nums text-text-primary"
+                      className="h-field w-40 rounded-control border border-border-strong bg-surface px-3 text-right text-body tabular-nums text-text-primary"
                     />
                   </td>
                 </tr>

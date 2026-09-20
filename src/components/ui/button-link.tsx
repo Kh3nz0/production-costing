@@ -19,7 +19,7 @@ type Size = 'md' | 'lg' | 'responsive';
  */
 const VARIANTS: Record<Variant, string> = {
   primary: 'bg-accent text-text-inverse hover:bg-accent-hover active:bg-accent-pressed',
-  secondary: 'border border-border-control bg-surface text-text-primary hover:bg-surface-sunken',
+  secondary: 'border border-border-strong bg-surface text-text-primary hover:bg-surface-sunken',
 };
 
 const SIZES: Record<Size, string> = {

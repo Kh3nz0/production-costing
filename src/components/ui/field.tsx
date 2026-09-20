@@ -12,9 +12,15 @@ export interface FieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
  * placeholder disappears exactly when the user needs it, and the helper always
  * wraps rather than truncating (D-077).
  *
- * The outline is `border-control` at 1px: WCAG 1.4.11 asks 3:1 of a component
- * boundary and it is the only border token that clears it. Never `border-strong`
- * here — the field would have no visible edge (F-19).
+ * The outline is `border-strong` at 1px, by the owner's decision on 21
+ * September 2026 (D-130), because that is what the Figma file specifies.
+ *
+ * This is a knowing accessibility regression and is recorded as one. The token
+ * is #E3E8F0, which is 1.23:1 against the surface; WCAG 1.4.11 asks 3:1 of a
+ * component boundary, and `border-control` at 3.44:1 was the only token that
+ * cleared it. F-19 made exactly this change in the other direction and F-72
+ * records it going back. If a field ever looks edgeless on a bright screen,
+ * this is why, and one token is all it takes to reverse.
  */
 export function Field({ label, helper, error, className = '', ...rest }: FieldProps) {
   const id = useId();
@@ -33,7 +39,7 @@ export function Field({ label, helper, error, className = '', ...rest }: FieldPr
         className={[
           'h-field w-full rounded-control bg-surface px-3 text-body text-text-primary',
           'border',
-          error !== undefined ? 'border-danger' : 'border-border-control',
+          error !== undefined ? 'border-danger' : 'border-border-strong',
           'placeholder:text-text-tertiary',
           'transition-colors duration-fast ease-out',
           'disabled:bg-border disabled:text-text-tertiary',

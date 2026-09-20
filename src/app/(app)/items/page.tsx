@@ -74,7 +74,7 @@ export default async function ItemsPage({
             name="q"
             defaultValue={search}
             placeholder="Search by name or SKU"
-            className="h-field w-[280px] rounded-control border border-border-control bg-surface px-3 text-body text-text-primary placeholder:text-text-tertiary"
+            className="h-field w-[280px] rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary placeholder:text-text-tertiary"
           />
         </label>
         {activeType !== 'all' ? <input type="hidden" name="type" value={activeType} /> : null}
