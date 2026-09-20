@@ -80,7 +80,12 @@ beforeAll(async () => {
   filament = await item('PLA Basic Filament', gram);
   await t.asUser(owner, async () => {
     // 10,000 g at exactly ₱2.00 so the run's material cost is easy to read.
-    await t.db.query('select public.record_opening_balance($1,10000,2.00)', [filament]);
+    // Dated explicitly, not `now()`: every other date in this file is fixed, so
+    // a default of today made the fixture pass until the clock rolled past the
+    // run's date and the ordering rule correctly refused it (D-128).
+    await t.db.query(`select public.record_opening_balance($1,10000,2.00,'2026-09-01')`, [
+      filament,
+    ]);
   });
 
   product = await t.asUser(owner, async () => {
@@ -306,7 +311,7 @@ describe('what a run refuses', () => {
   it('refuses to consume stock that is not there', async () => {
     const scarce = await item('Scarce filament', gram);
     await t.asUser(owner, async () => {
-      await t.db.query('select public.record_opening_balance($1,10,1.00)', [scarce]);
+      await t.db.query(`select public.record_opening_balance($1,10,1.00,'2026-09-01')`, [scarce]);
     });
     const other = await t.asUser(owner, async () => {
       const r = await t.db.query<{ create_product: string }>(

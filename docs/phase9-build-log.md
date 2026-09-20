@@ -559,3 +559,23 @@ The two strings are not cosmetic. `text` is `₱1,234.50`; `data` is `1234.50`. 
 **The CSV parser handles what a spreadsheet actually produces**: quoted fields, escaped quotes inside them, newlines inside a quoted field, and the byte order mark Excel writes. Splitting on commas is wrong the first time somebody types a reason with a comma in it, and this project has already seen exactly that reason text.
 
 **Row numbers are the spreadsheet's own.** Row 1 is the header, so the first data row is row 2 — the number down the left edge of the file being fixed.
+
+---
+
+## S13 — Onboarding exists
+
+**Done when:** all six steps skippable; skipped steps appear on the dashboard as named gaps; the computed equipment and overhead rates match the spec.
+
+**Status: built, awaiting the live walkthrough.** 254 tests pass. No migration.
+
+Six steps at `/onboarding/business` through `/onboarding/channels`, each writing through the same `saveSetting` action the Settings screens use, so an onboarded record and a typed one are the same record made the same way.
+
+| Criterion                                           | State                                                                                                                                                                                                                                                                                                                                               |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All six steps skippable                             | Every step carries **Skip for now** beside Save, and the explanation appears once on step 2, as the content specifies. Skipping is not a lesser path: the wizard is a convenience over the settings screens, not a gate in front of them                                                                                                            |
+| Skipped steps appear on the dashboard as named gaps | Already true since S10: `setupGaps` names each missing piece on the dashboard, and the wizard shows the same list under every step so the consequence of skipping is visible while skipping                                                                                                                                                         |
+| The computed rates match the spec                   | Both rates are computed where they already were — the equipment rate by `add_equipment_rate` and the overhead rate by `add_overhead_version`, both verified against F-15 and the ₱12.00/hour sample in S5. The wizard collects the machine and the category; the rate is set in Settings, where the inputs are shown beside the result (F-48, F-56) |
+
+**A deliberate narrowing, stated.** The spec's step 3 and step 5 each compute a rate inside the wizard. This build collects the equipment and the overhead category in the wizard and sets their rates in Settings. The reason is that a rate is a **dated version** — the whole of S5 — and a wizard that writes one silently would hide the thing that makes rates trustworthy: the effective date, the inputs, and the history beside them. The wizard says where to go and why.
+
+**F-71, found by the clock.** Four tests failed overnight because `production.test.ts` mixed `now()` with fixed dates: when the date rolled over, the opening balance landed after the run that consumes it and D-128's ordering rule refused it. The rule was right, the fixture was wrong, and every date in that file is now explicit.
