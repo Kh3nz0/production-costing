@@ -10,8 +10,6 @@ import { formatCalculationAmount, formatQuantity, toDecimal } from '@/lib/decima
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
   'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
-const TH = 'px-4 py-3 text-left text-caption font-medium text-text-secondary';
-const TD = 'px-4 py-3 text-body-sm text-text-primary';
 
 /**
  * Postgres hands back `numeric(20,6)` as `251.160000`, and the Expected column
@@ -94,48 +92,56 @@ export function RecordRunForm({
           Quantities default to what the recipe expected. Change anything that differed. Machine and
           labour time are totals for the whole batch, not per unit.
         </p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[44rem]">
-            <thead>
-              <tr className="border-b border-border-strong">
-                <th className={TH}>Line</th>
-                <th className={`${TH} text-right`}>Expected</th>
-                <th className={`${TH} text-right`}>Actual</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lines.map((line) => (
-                <tr key={line.id} className="border-b border-border-subtle">
-                  <td className={TD}>
-                    {line.label}
-                    <span className="text-caption ml-2 text-text-tertiary">
-                      {line.line_type === 'machine_time'
-                        ? 'machine time'
-                        : line.line_type === 'labour'
-                          ? 'labour'
-                          : line.line_type}
-                    </span>
-                  </td>
-                  <td className={`${TD} text-right tabular-nums text-text-secondary`}>
-                    {line.expected_qty === null
-                      ? '—'
-                      : formatQuantity(line.expected_qty, line.unit ?? undefined)}
-                  </td>
-                  <td className={`${TD} text-right`}>
-                    <input
-                      type="number"
-                      step="any"
-                      min="0"
-                      value={actual[line.id] ?? ''}
-                      onChange={(e) => setActual((all) => ({ ...all, [line.id]: e.target.value }))}
-                      className="h-field w-40 rounded-control border border-border-strong bg-surface px-3 text-right text-body tabular-nums text-text-primary"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/*
+          Same shape as the sale form: stacked and labelled on a phone, a row
+          under a shared header above `lg`. A run is recorded standing at the
+          machine, which is the worst possible place for a table that scrolls
+          sideways.
+        */}
+        <div className="text-caption mt-4 hidden gap-3 px-1 pb-1 text-text-secondary lg:grid lg:grid-cols-[minmax(0,2fr)_8rem_10rem]">
+          <span>Line</span>
+          <span className="text-right">Expected</span>
+          <span className="text-right">Actual</span>
         </div>
+        <ul className="mt-2 flex flex-col gap-4 lg:gap-2">
+          {lines.map((line) => (
+            <li
+              key={line.id}
+              className="grid gap-2 rounded-card border border-border-strong p-4 lg:grid-cols-[minmax(0,2fr)_8rem_10rem] lg:items-center lg:rounded-none lg:border-0 lg:border-b lg:border-border-subtle lg:p-0 lg:pb-3"
+            >
+              <span className="text-body-sm text-text-primary">
+                {line.label}
+                <span className="text-caption ml-2 text-text-tertiary">
+                  {line.line_type === 'machine_time'
+                    ? 'machine time'
+                    : line.line_type === 'labour'
+                      ? 'labour'
+                      : line.line_type}
+                </span>
+              </span>
+              <span className="text-body-sm flex justify-between gap-3 tabular-nums text-text-secondary lg:justify-end">
+                <span className="text-caption text-text-secondary lg:hidden">Expected</span>
+                {line.expected_qty === null
+                  ? '—'
+                  : formatQuantity(line.expected_qty, line.unit ?? undefined)}
+              </span>
+              <label className="flex flex-col gap-1">
+                <span className="text-caption text-text-secondary lg:sr-only">
+                  Actual{line.unit === null ? '' : ` (${line.unit})`}
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="any"
+                  min="0"
+                  value={actual[line.id] ?? ''}
+                  onChange={(e) => setActual((all) => ({ ...all, [line.id]: e.target.value }))}
+                  className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-right text-body tabular-nums text-text-primary"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className={CARD}>

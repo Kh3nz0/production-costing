@@ -15,7 +15,6 @@ import type { SellableItem } from '@/lib/runs';
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 const CONTROL =
   'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
-const TH = 'px-3 py-2 text-left text-caption font-medium text-text-secondary';
 
 interface DraftLine {
   key: string;
@@ -142,7 +141,10 @@ export function RecordSaleForm({
   );
 
   return (
-    <form action={action} className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+    <form
+      action={action}
+      className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1.4fr_1fr] lg:items-start"
+    >
       <input type="hidden" name="lines" value={JSON.stringify(lines)} />
       <input type="hidden" name="use_estimate" value={useEstimate ? 'yes' : 'no'} />
 
@@ -177,110 +179,131 @@ export function RecordSaleForm({
 
         <section className={CARD}>
           <h2 className="text-heading-sm text-text-primary">What was sold</h2>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[44rem]">
-              <thead>
-                <tr className="border-b border-border-strong">
-                  <th className={TH}>Product</th>
-                  <th className={`${TH} text-right`}>Quantity</th>
-                  <th className={`${TH} text-right`}>Unit price</th>
-                  <th className={`${TH} text-right`}>Discount</th>
-                  <th className={`${TH} text-right`}>Line total</th>
-                  <th className={TH} />
-                </tr>
-              </thead>
-              <tbody>
-                {lines.map((line, index) => {
-                  const item = items.find((i) => i.id === line.item_id);
-                  const total = money(line.unit_price)
-                    .timesExact(toDecimal(line.quantity || '0'))
-                    .minus(money(line.discount).toDecimal());
-                  return (
-                    <tr key={line.key} className="border-b border-border-subtle">
-                      <td className="px-3 py-2">
-                        <select
-                          value={line.item_id}
-                          onChange={(e) =>
-                            setLines((all) =>
-                              all.map((l) =>
-                                l.key === line.key ? { ...l, item_id: e.target.value } : l,
-                              ),
-                            )
-                          }
-                          className={CONTROL}
-                        >
-                          <option value="">Choose</option>
-                          {items.map((i) => (
-                            <option key={i.id} value={i.id}>
-                              {i.name}
-                            </option>
-                          ))}
-                        </select>
-                        {item ? (
-                          <span className="text-caption mt-1 block text-text-tertiary">
-                            {formatQuantity(item.qty_on_hand, item.unit_code ?? undefined)} on hand
-                            {item.avg_unit_cost === null ? ', no cost established' : ''}
-                          </span>
-                        ) : null}
-                      </td>
-                      {(
-                        [
-                          ['quantity', line.quantity],
-                          ['unit_price', line.unit_price],
-                          ['discount', line.discount],
-                        ] as const
-                      ).map(([key, value]) => (
-                        <td key={key} className="px-3 py-2 text-right">
-                          <input
-                            type="number"
-                            step="any"
-                            min="0"
-                            value={value}
-                            onChange={(e) =>
-                              setLines((all) =>
-                                all.map((l) =>
-                                  l.key === line.key ? { ...l, [key]: e.target.value } : l,
-                                ),
-                              )
-                            }
-                            className="h-field w-28 rounded-control border border-border-strong bg-surface px-3 text-right text-body tabular-nums text-text-primary"
-                          />
-                        </td>
-                      ))}
-                      <td className="px-3 py-2 text-right text-body-sm tabular-nums">
-                        {/* A line with no product chosen is not part of the
-                            sale, so it must not show a total the panel above
-                            does not count (F-66). */}
-                        {item === undefined ? (
-                          <span className="text-text-tertiary">—</span>
-                        ) : (
-                          <span className="text-text-primary">
-                            {Money.fromDecimal(total).format()}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-right">
-                        {lines.length > 1 ? (
-                          <button
-                            type="button"
-                            onClick={() => setLines((all) => all.filter((l) => l.key !== line.key))}
-                            className="text-body-sm text-danger underline"
-                            aria-label={`Remove line ${index + 1}`}
-                          >
-                            Remove
-                          </button>
-                        ) : null}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+
+          {/*
+            One line, two shapes, one piece of markup.
+            A table that scrolls sideways is not something anybody fills in with
+            a thumb, and this is the screen the specification times at 390px. So
+            a line is a grid: stacked and labelled on a phone, a row under a
+            shared header above `lg`. The labels are present at both sizes and
+            hidden visually on the wide one, so a screen reader hears a label on
+            every field either way.
+          */}
+          <div className="text-caption mt-4 hidden gap-3 px-1 pb-1 text-text-secondary lg:grid lg:grid-cols-[minmax(0,2fr)_6rem_7rem_6rem_7rem_auto]">
+            <span>Product</span>
+            <span className="text-right">Quantity</span>
+            <span className="text-right">Unit price</span>
+            <span className="text-right">Discount</span>
+            <span className="text-right">Line total</span>
+            <span />
           </div>
+
+          <ul className="mt-2 flex flex-col gap-4 lg:gap-2">
+            {lines.map((line, index) => {
+              const item = items.find((i) => i.id === line.item_id);
+              const total = money(line.unit_price)
+                .timesExact(toDecimal(line.quantity || '0'))
+                .minus(money(line.discount).toDecimal());
+              const field = (
+                key: 'quantity' | 'unit_price' | 'discount',
+                label: string,
+                value: string,
+              ) => (
+                <label key={key} className="flex flex-col gap-1">
+                  <span className="text-caption text-text-secondary lg:sr-only">{label}</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    min="0"
+                    value={value}
+                    onChange={(e) =>
+                      setLines((all) =>
+                        all.map((l) => (l.key === line.key ? { ...l, [key]: e.target.value } : l)),
+                      )
+                    }
+                    className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-right text-body tabular-nums text-text-primary"
+                  />
+                </label>
+              );
+
+              return (
+                <li
+                  key={line.key}
+                  className="grid gap-3 rounded-card border border-border-strong p-4 lg:grid-cols-[minmax(0,2fr)_6rem_7rem_6rem_7rem_auto] lg:items-start lg:rounded-none lg:border-0 lg:border-b lg:border-border-subtle lg:p-0 lg:pb-3"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-caption text-text-secondary lg:sr-only">Product</span>
+                    <select
+                      value={line.item_id}
+                      aria-label="Product"
+                      onChange={(e) =>
+                        setLines((all) =>
+                          all.map((l) =>
+                            l.key === line.key ? { ...l, item_id: e.target.value } : l,
+                          ),
+                        )
+                      }
+                      className={CONTROL}
+                    >
+                      <option value="">Choose</option>
+                      {items.map((i) => (
+                        <option key={i.id} value={i.id}>
+                          {i.name}
+                        </option>
+                      ))}
+                    </select>
+                    {item ? (
+                      <span className="text-caption text-text-tertiary">
+                        {formatQuantity(item.qty_on_hand, item.unit_code ?? undefined)} on hand
+                        {item.avg_unit_cost === null ? ', no cost established' : ''}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 lg:contents">
+                    {field('quantity', 'Quantity', line.quantity)}
+                    {field('unit_price', 'Unit price', line.unit_price)}
+                    {field('discount', 'Discount', line.discount)}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 lg:h-field lg:justify-end">
+                    <span className="text-caption text-text-secondary lg:hidden">Line total</span>
+                    <span className="text-body-sm tabular-nums">
+                      {/* A line with no product chosen is not part of the sale,
+                          so it must not show a total the panel does not count
+                          (F-66). */}
+                      {item === undefined ? (
+                        <span className="text-text-tertiary">—</span>
+                      ) : (
+                        <span className="text-text-primary">
+                          {Money.fromDecimal(total).format()}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-end lg:h-field lg:items-center">
+                    {lines.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => setLines((all) => all.filter((l) => l.key !== line.key))}
+                        className="text-body-sm h-control-md px-2 text-danger underline lg:h-auto lg:px-0"
+                        aria-label={`Remove line ${index + 1}`}
+                      >
+                        Remove
+                      </button>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
           <button
             type="button"
             onClick={() => setLines((all) => [...all, blank()])}
-            className="text-body-sm mt-4 text-accent-text underline"
+            className="text-body-sm h-control-lg mt-2 text-accent-text underline lg:h-control-md"
           >
             Add another product
           </button>
@@ -375,7 +398,17 @@ export function RecordSaleForm({
       </div>
 
       <div className="flex flex-col gap-6">
-        <section className={`${CARD} lg:sticky lg:top-6`}>
+        {/*
+          Sticky on desktop, bounded by the viewport and scrolling inside
+          itself. It was sticky and unbounded before, so on a short window the
+          panel ran past the fold and sat on top of the content beneath it
+          (F-67). On a phone it is not sticky at all and sits in reading order,
+          after the fields and before Save: you fill the sale in, then read what
+          it earned, then commit.
+        */}
+        <section
+          className={`${CARD} lg:sticky lg:top-6 lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto`}
+        >
           <h2 className="text-heading-sm text-text-primary">What this sale earns</h2>
           <dl className="mt-4 divide-y divide-border-subtle">
             {row('Revenue', result.revenue.format())}
