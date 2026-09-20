@@ -48,6 +48,7 @@ type Built = {
     | '/sales'
     | '/inventory'
     | '/products'
+    | '/reports'
     | '/settings';
   stage?: never;
 };
@@ -77,7 +78,7 @@ const OPERATE: Nav[] = [
 
 const UNDERSTAND: Nav[] = [
   { label: 'Products', href: '/products', outline: CubeIcon, solid: CubeSolid },
-  { label: 'Reports', stage: 'S11', outline: ChartBarIcon, solid: ChartBarSolid },
+  { label: 'Reports', href: '/reports', outline: ChartBarIcon, solid: ChartBarSolid },
 ];
 
 const SETTINGS: Nav = {

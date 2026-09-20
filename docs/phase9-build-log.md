@@ -506,3 +506,34 @@ The ledger shows four consumption movements and one output movement, and the Ite
 **D-079's lint caught three more coercions**, in the date arithmetic and in the overhead bar's width. Dates are now parsed by `Date` and the bar is clamped through `Decimal`; none was silenced.
 
 **Not built, and named rather than skipped:** the _Products below target margin_ card. It needs each product's current estimated margin, which means costing every product on every dashboard load — the S6 calculator, once per product, with its rate lookups. That belongs behind the reports layer in S11 rather than in a page load, and the card will be added when the report exists.
+
+---
+
+## S11 — Reports and exports agree with the screen
+
+**Done when:** all twelve render with date filters; every export's totals equal the screen's; a 5,000-row report pages rather than loading whole; every paged query ends its order chain with a unique column.
+
+**Status: built, awaiting the live walkthrough.** 245 tests pass. No migration.
+
+**The export cannot disagree with the screen, by construction.** A report is one function returning one set of rows, and every cell carries two strings: `text` for the screen and `data` for the CSV. The export route runs the same function with the same filters and the same page and writes the `data` side. There is no second query and no recomputed total, so "the CSV contains the same rows, filters and totals as the screen" is a property of the shape rather than a thing to keep checking.
+
+The two strings are not cosmetic. `text` is `₱1,234.50`; `data` is `1234.50`. Sending the display form to a file is how a column of money arrives in a spreadsheet as a column of text — and `Money.toString()` doing exactly that cost a live sale its fees three stages ago (F-68).
+
+**A figure that is unknown writes an empty cell, never a zero.** `₱0.00` in a spreadsheet is a claim; an empty cell is the absence of one (D-119).
+
+| Report                                     | Notes                                                                                                                                                           |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product cost breakdown                     | One row per component per product, costed at the rates in force on the end date, with a missing rate named rather than counted as zero                          |
+| Inventory on hand                          | Uncosted items contribute nothing to the total and the count of them is stated                                                                                  |
+| Inventory movements                        | Ordered by `occurred_at desc, seq desc` — `seq` is the unique column, and the ledger's own order                                                                |
+| Inventory valuation                        | Reads the balance and average stored on each item's last movement on or before the date, not a replay                                                           |
+| Purchase history, Supplier spending        | Landed totals, so the extras allocated in S3 are included                                                                                                       |
+| Production history                         | Run cost, production loss and cost per accepted unit                                                                                                            |
+| Failures and waste                         | Waste, damage and failures with what each cost                                                                                                                  |
+| Sales by product, Profitability by channel | One uncosted line makes that product's or channel's cost unknown rather than smaller                                                                            |
+| Estimated versus actual                    | Compared against the estimate **as it stood when the run started**. Comparing against today's estimate would make past variance change every time a price moved |
+| Cost changes                               | The first and last average recorded in the period, from the movements themselves                                                                                |
+
+**Paging.** Every list query ends its order chain with a unique column, asks for one row more than the page size, and reports `hasMore` from that. PostgREST caps a response at 1000 rows and `.limit()` cannot raise it; paging over a non-unique sort returns rows in a different order per page, duplicating some and skipping others (D-080).
+
+**D-079's lint caught two more coercions** in the page-number parsing, in the page and in the export route. Both go through `Decimal` now.
