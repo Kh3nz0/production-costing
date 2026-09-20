@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 import { applyUpload, validateUpload, type ImportState } from './actions';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import type { Template } from '@/lib/import-types';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
@@ -25,21 +26,18 @@ export function ImportForm({ templates }: { templates: Template[] }) {
       <form action={check} className={`${CARD} mt-6`}>
         <h2 className="text-heading-sm text-text-primary">Check a file</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="text-caption text-text-secondary">
-            Template
-            <select
-              name="template_code"
-              value={templateCode}
-              onChange={(e) => setTemplateCode(e.target.value)}
-              className={CONTROL}
-            >
-              {templates.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {option.order}. {option.code} — {option.title}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label="Template"
+            name="template_code"
+            value={templateCode}
+            onChange={(e) => setTemplateCode(e.target.value)}
+          >
+            {templates.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.order}. {option.code} — {option.title}
+              </option>
+            ))}
+          </Select>
           <label className="text-caption text-text-secondary">
             CSV file
             <input type="file" name="file" accept=".csv,text/csv" className={`${CONTROL} pt-2`} />

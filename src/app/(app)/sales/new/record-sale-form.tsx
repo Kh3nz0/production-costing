@@ -6,6 +6,7 @@ import { useActionState, useState } from 'react';
 import { recordSale } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { Select } from '@/components/ui/select';
 import { formatPercent, formatQuantity, toDecimal } from '@/lib/decimal';
 import { Money } from '@/lib/money';
 import { lineRevenue, marginsDiverge, saleResult, type SaleLine } from '@/lib/sales';
@@ -152,22 +153,19 @@ export function RecordSaleForm({
         <section className={CARD}>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Date" name="sale_date" type="date" defaultValue={today} required />
-            <label className="text-caption text-text-secondary">
-              Channel
-              <select
-                name="channel_id"
-                value={channelId}
-                onChange={(e) => setChannelId(e.target.value)}
-                className={CONTROL}
-              >
-                <option value="">Direct</option>
-                {channels.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Channel"
+              name="channel_id"
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+            >
+              <option value="">Direct</option>
+              {channels.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
             <Field
               label="Reference number"
               name="reference_no"
