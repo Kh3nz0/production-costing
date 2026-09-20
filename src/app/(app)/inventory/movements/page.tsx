@@ -6,7 +6,7 @@ import { Money } from '@/lib/money';
 import { formatQuantity, formatRate, toDecimal } from '@/lib/decimal';
 import { InventoryHeader, InventoryTabs } from '@/components/inventory-tabs';
 
-export const metadata = { title: 'Inventory movements — Production Costing' };
+export const metadata = { title: 'Inventory movements' };
 
 export default async function MovementsPage({
   searchParams,

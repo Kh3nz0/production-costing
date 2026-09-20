@@ -19,7 +19,7 @@ import { OnboardingStep } from './onboarding-step';
 export async function generateMetadata({ params }: { params: Promise<{ step: string }> }) {
   const { step } = await params;
   const found = STEPS.find((entry) => entry.slug === step);
-  return { title: `${found?.title ?? 'Set up'} — Production Costing` };
+  return { title: `${found?.title ?? 'Set up'}` };
 }
 
 export default async function OnboardingPage({ params }: { params: Promise<{ step: string }> }) {
@@ -47,7 +47,7 @@ export default async function OnboardingPage({ params }: { params: Promise<{ ste
   ]);
 
   return (
-    <main className="mx-auto max-w-[720px] px-6 py-9">
+    <main className="mx-auto max-w-form-lg px-6 py-9">
       <p className="text-caption text-text-secondary">Step {current.of} of 6</p>
       <h1 className="text-title mt-1 text-text-primary">Set up your business</h1>
 

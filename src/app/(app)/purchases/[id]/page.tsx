@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const purchase = await getPurchase(id);
   const name = purchase?.reference_no ?? purchase?.purchase_date ?? 'Purchase';
-  return { title: `${name} — Production Costing` };
+  return { title: `${name}` };
 }
 
 export default async function PurchasePage({ params }: { params: Promise<{ id: string }> }) {

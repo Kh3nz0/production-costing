@@ -5,7 +5,7 @@ import { listSellableItems } from '@/lib/runs';
 import { businessDate } from '@/lib/business-date';
 import { RecordSaleForm } from './record-sale-form';
 
-export const metadata = { title: 'Record a sale — Production Costing' };
+export const metadata = { title: 'Record a sale' };
 
 export default async function NewSalePage() {
   const org = await requireOrg();

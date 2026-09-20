@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { SignInForm } from './sign-in-form';
 import { safeRedirectPath } from '@/lib/auth-routes';
 
-export const metadata = { title: 'Sign in — Production Costing' };
+export const metadata = { title: 'Sign in' };
 
 export default async function SignInPage({
   searchParams,

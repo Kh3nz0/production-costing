@@ -3,7 +3,7 @@ import { PurchaseForm } from './purchase-form';
 import { requireOrg } from '@/lib/org';
 import { listPurchasableItems, listSuppliers } from '@/lib/purchases';
 
-export const metadata = { title: 'New purchase — Production Costing' };
+export const metadata = { title: 'New purchase' };
 
 export default async function NewPurchasePage() {
   await requireOrg();

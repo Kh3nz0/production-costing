@@ -14,8 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const item = await getItem(id);
   return {
-    title:
-      item === null ? 'Item not found — Production Costing' : `${item.name} — Production Costing`,
+    title: item === null ? 'Item not found' : `${item.name}`,
   };
 }
 

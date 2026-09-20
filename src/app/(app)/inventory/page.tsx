@@ -7,7 +7,7 @@ import { formatQuantity, formatRate, toDecimal } from '@/lib/decimal';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { InventoryHeader, InventoryTabs } from '@/components/inventory-tabs';
 
-export const metadata = { title: 'Inventory — Production Costing' };
+export const metadata = { title: 'Inventory' };
 
 export default async function InventoryPage({
   searchParams,

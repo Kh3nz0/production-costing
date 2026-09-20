@@ -5,7 +5,7 @@ import { listPurchases } from '@/lib/purchases';
 import { PURCHASE_STATUS_LABEL } from '@/lib/purchase-types';
 import { Money } from '@/lib/money';
 
-export const metadata = { title: 'Purchases — Production Costing' };
+export const metadata = { title: 'Purchases' };
 
 export default async function PurchasesPage() {
   await requireOrg();

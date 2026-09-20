@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/button-link';
+import { EmptyState } from '@/components/ui/empty-state';
 import { formatPercent, formatRate, toDecimal } from '@/lib/decimal';
 import { requireOrg } from '@/lib/org';
 import { listRuns } from '@/lib/runs';
 
-export const metadata = { title: 'Production — Production Costing' };
+export const metadata = { title: 'Production' };
 
 const STATUSES = [
   ['', 'All'],
@@ -60,10 +61,14 @@ export default async function ProductionPage({
       </nav>
 
       {runs.length === 0 ? (
-        <p className="text-body mt-6 rounded-card border border-border-strong bg-surface p-6 text-text-secondary">
-          No runs yet. A run records what you actually made, consumes the real materials from stock,
-          and locks its cost at the rates in force that day.
-        </p>
+        <EmptyState
+          title="No runs yet"
+          action={<ButtonLink href="/production/new">Start a run</ButtonLink>}
+        >
+          A run records what you actually made. It consumes the real materials from stock and locks
+          its cost at the rates in force that day, so a price change next month cannot rewrite what
+          this one cost.
+        </EmptyState>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
           <table className="w-full min-w-[46rem]">

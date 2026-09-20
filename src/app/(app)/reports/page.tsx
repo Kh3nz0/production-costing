@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { REPORTS } from '@/lib/report-types';
 import { requireOrg } from '@/lib/org';
 
-export const metadata = { title: 'Reports — Production Costing' };
+export const metadata = { title: 'Reports' };
 
 export default async function ReportsPage() {
   await requireOrg();

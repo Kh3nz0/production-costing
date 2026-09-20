@@ -21,7 +21,7 @@ export function ReverseRunForm({ runId }: { runId: string }) {
         happened&rdquo; and &ldquo;this happened and was undone&rdquo; are different facts, and only
         one of them is true.
       </p>
-      <form action={action} className="mt-4 flex max-w-[480px] flex-col gap-3">
+      <form action={action} className="mt-4 flex max-w-form-sm flex-col gap-3">
         <input type="hidden" name="run_id" value={runId} />
         <Field label="Reason" name="reason" required helper="Kept on every reversing movement." />
         {state.error !== undefined ? (

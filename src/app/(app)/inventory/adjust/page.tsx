@@ -3,7 +3,7 @@ import { AdjustForm, type AdjustableItem } from './adjust-form';
 import { requireOrg } from '@/lib/org';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata = { title: 'Adjust stock — Production Costing' };
+export const metadata = { title: 'Adjust stock' };
 
 export default async function AdjustPage({
   searchParams,

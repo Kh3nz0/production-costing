@@ -59,7 +59,7 @@ export function AdjustForm({
   // instead, and name the two ways out.
   if (opening && choices.length === 0) {
     return (
-      <div className="mt-6 flex max-w-[520px] flex-col gap-4">
+      <div className="mt-6 flex max-w-form flex-col gap-4">
         <p className="text-body text-text-primary">
           Every item already has stock history, so none can take an opening balance. An opening
           balance is only valid as an item&rsquo;s first movement.
@@ -84,7 +84,7 @@ export function AdjustForm({
   }
 
   return (
-    <form action={action} className="mt-6 flex max-w-[520px] flex-col gap-4">
+    <form action={action} className="mt-6 flex max-w-form flex-col gap-4">
       <div className="flex w-full flex-col gap-1">
         <label htmlFor="item_id" className="text-caption text-text-secondary">
           Item

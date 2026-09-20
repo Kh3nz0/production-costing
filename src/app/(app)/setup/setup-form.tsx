@@ -11,7 +11,7 @@ export function SetupForm() {
   const [state, action, pending] = useActionState(createOrganization, initial);
 
   return (
-    <form action={action} className="mt-6 flex max-w-[420px] flex-col gap-4">
+    <form action={action} className="mt-6 flex max-w-form-sm flex-col gap-4">
       <Field
         label="Business name"
         name="name"

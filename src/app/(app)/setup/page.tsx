@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { SetupForm } from './setup-form';
 import { getCurrentOrg } from '@/lib/org';
 
-export const metadata = { title: 'Set up your business — Production Costing' };
+export const metadata = { title: 'Set up your business' };
 
 export default async function SetupPage() {
   // Already set up: nothing to do here.

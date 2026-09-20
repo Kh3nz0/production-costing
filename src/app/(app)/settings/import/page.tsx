@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TEMPLATES } from '@/lib/import-types';
 import { ImportForm } from './import-form';
 
-export const metadata = { title: 'Import — Production Costing' };
+export const metadata = { title: 'Import' };
 
 export default async function ImportPage() {
   const org = await requireOrg();

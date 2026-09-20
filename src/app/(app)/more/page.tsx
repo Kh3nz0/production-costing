@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { requireOrg } from '@/lib/org';
 
-export const metadata = { title: 'More — Costed' };
+export const metadata = { title: 'More' };
 
 /**
  * Everything the five tabs do not hold.

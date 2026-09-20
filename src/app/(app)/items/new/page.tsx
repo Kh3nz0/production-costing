@@ -3,7 +3,7 @@ import { ItemForm } from './item-form';
 import { requireOrg } from '@/lib/org';
 import { listUnits } from '@/lib/items';
 
-export const metadata = { title: 'New item — Production Costing' };
+export const metadata = { title: 'New item' };
 
 export default async function NewItemPage() {
   await requireOrg();

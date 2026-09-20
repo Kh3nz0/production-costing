@@ -82,6 +82,13 @@
      token: changing the system's feel meant twenty edits and a grep. */
   --duration-fast: 120ms;
 
+  /* Form measures. Nine different arbitrary widths had accumulated — 420, 480,
+     520, 560, 620, 640, 720, 760, 820 — each chosen in the moment. Three named
+     measures: one field wide, a form, and a form with two columns. */
+  --container-form-sm: 420px;
+  --container-form: 560px;
+  --container-form-lg: 760px;
+
   --spacing-0: 0px;
   --spacing-1: 4px;
   --spacing-2: 8px;

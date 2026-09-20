@@ -17,7 +17,7 @@ import {
   wasteRate,
 } from '@/lib/metrics';
 
-export const metadata = { title: 'Dashboard — Production Costing' };
+export const metadata = { title: 'Dashboard' };
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
 
@@ -94,7 +94,74 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {/*
+        The answer first, then the things that explain it.
+        A month has one headline question — what did this month actually keep,
+        and did it cover what the month costs to run — and everything else here
+        is context for it. Seven equal cards said all seven mattered the same,
+        which is the same as saying none of them does.
+      */}
+      <section className="mt-6 grid gap-4 lg:grid-cols-[1.25fr_1fr]">
+        <div className={`${CARD} flex flex-col justify-between`}>
+          <div>
+            <p className="text-caption text-text-secondary">Contribution profit this month</p>
+            <p
+              className={`text-title mt-2 tabular-nums ${
+                sales.contribution !== null && sales.contribution.isNegative()
+                  ? 'text-danger'
+                  : 'text-text-primary'
+              }`}
+            >
+              {sales.contribution === null ? 'Cost unknown' : sales.contribution.format()}
+            </p>
+            <p className="text-body-sm mt-2 text-text-secondary">
+              {sales.contribution === null
+                ? `${sales.withUnknownCost} ${sales.withUnknownCost === 1 ? 'sale has' : 'sales have'} no established cost, so the month's total cannot be worked out.`
+                : `${sales.revenue.format()} of revenue across ${sales.sales} ${sales.sales === 1 ? 'sale' : 'sales'}, ${sales.contributionMargin === null ? 'with no net revenue yet' : `keeping ${formatPercent(sales.contributionMargin)} of what reached you`}.`}
+            </p>
+          </div>
+          <p className="text-caption mt-4 text-text-tertiary">
+            After the cost of the goods, fees, discounts and shipping. Not net profit: your monthly
+            running costs, taxes and everything else you pay are still to come out.
+          </p>
+        </div>
+
+        {overhead !== null ? (
+          <div className={`${CARD} flex flex-col justify-between`}>
+            <div>
+              <p className="text-caption text-text-secondary">Did the month pay for itself?</p>
+              <p className="text-heading-lg mt-2 tabular-nums text-text-primary">
+                {overhead.recovered === null ? 'Cost unknown' : overhead.recovered.format()}
+                <span className="text-body text-text-tertiary"> of {overhead.pool.format()}</span>
+              </p>
+              {overhead.recovered !== null ? (
+                <>
+                  <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-sunken">
+                    {/* Clamped: an overshoot drawn proportionally spills past the
+                        card, and the words below already say it (F-20). */}
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{ width: `${barWidth(overhead.ratio)}%` }}
+                    />
+                  </div>
+                  <p className="text-body-sm mt-3 text-text-secondary">
+                    {overhead.recovered.compare(overhead.pool) < 0
+                      ? `${overhead.pool.minus(overhead.recovered).format()} short of covering this month's running costs.`
+                      : `Running costs covered. ${overhead.recovered.minus(overhead.pool).format()} beyond them so far.`}
+                  </p>
+                </>
+              ) : null}
+            </div>
+            <p className="text-caption mt-4 text-text-tertiary">
+              Overhead is not charged to each product. It is covered by the total contribution
+              profit your sales produce. When this bar passes the line, the month has paid for
+              itself.
+            </p>
+          </div>
+        ) : null}
+      </section>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
           label="Inventory value"
           value={inventory.value.format()}
@@ -104,27 +171,6 @@ export default async function DashboardPage() {
           label="Production cost this month"
           value={production.cost.format()}
           sub={`${production.runs} ${production.runs === 1 ? 'run' : 'runs'} completed`}
-        />
-        <Stat
-          label="Revenue this month"
-          value={sales.revenue.format()}
-          sub={`${sales.sales} ${sales.sales === 1 ? 'sale' : 'sales'}`}
-        />
-        <Stat
-          label="Contribution profit this month"
-          value={sales.contribution === null ? 'Cost unknown' : sales.contribution.format()}
-          sub={
-            sales.withUnknownCost > 0
-              ? `${sales.withUnknownCost} ${sales.withUnknownCost === 1 ? 'sale has' : 'sales have'} no established cost`
-              : sales.contributionMargin === null
-                ? 'No net revenue yet'
-                : `${formatPercent(sales.contributionMargin)} of net revenue`
-          }
-        />
-        <Stat
-          label="Average contribution margin"
-          value={sales.contributionMargin === null ? '—' : formatPercent(sales.contributionMargin)}
-          sub="Across sales this month, after fees"
         />
         <Stat
           label="Waste rate"
@@ -144,37 +190,6 @@ export default async function DashboardPage() {
           sub="Units rejected against units started, all products counted equally"
         />
       </div>
-
-      {overhead !== null ? (
-        <section className={`${CARD} mt-6`}>
-          <h2 className="text-heading-sm text-text-primary">Overhead recovered this month</h2>
-          <p className="text-heading-md mt-2 tabular-nums text-text-primary">
-            {overhead.recovered === null ? 'Cost unknown' : overhead.recovered.format()} of{' '}
-            {overhead.pool.format()}
-          </p>
-          {overhead.recovered !== null ? (
-            <>
-              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-sunken">
-                {/* Clamped: an overshoot drawn proportionally spills past the
-                    card, and the words below already say it (F-20). */}
-                <div
-                  className="h-full rounded-full bg-accent"
-                  style={{ width: `${barWidth(overhead.ratio)}%` }}
-                />
-              </div>
-              <p className="text-body-sm mt-3 text-text-secondary">
-                {overhead.recovered.compare(overhead.pool) < 0
-                  ? `${overhead.pool.minus(overhead.recovered).format()} short of covering this month's running costs.`
-                  : `Running costs covered. ${overhead.recovered.minus(overhead.pool).format()} beyond them so far.`}
-              </p>
-            </>
-          ) : null}
-          <p className="text-caption mt-3 text-text-tertiary">
-            Overhead is not charged to each product. It is covered by the total contribution profit
-            your sales produce. When this bar passes the line, the month has paid for itself.
-          </p>
-        </section>
-      ) : null}
 
       <section className={`${CARD} mt-6`}>
         <h2 className="text-heading-sm text-text-primary">Sales against the VAT threshold</h2>

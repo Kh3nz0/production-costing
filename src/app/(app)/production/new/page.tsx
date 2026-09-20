@@ -3,7 +3,7 @@ import { requireOrg } from '@/lib/org';
 import { listMakeableProducts } from '@/lib/runs';
 import { StartRunForm } from './start-run-form';
 
-export const metadata = { title: 'Start a production run — Production Costing' };
+export const metadata = { title: 'Start a production run' };
 
 export default async function StartRunPage() {
   const org = await requireOrg();

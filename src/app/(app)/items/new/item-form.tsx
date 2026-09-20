@@ -56,7 +56,7 @@ export function ItemForm({ units }: { units: UnitOption[] }) {
   const needsFactor = purchaseUnit !== '' && purchaseUnit !== baseUnit;
 
   return (
-    <form action={action} className="mt-6 flex max-w-[760px] flex-col gap-6">
+    <form action={action} className="mt-6 flex max-w-form-lg flex-col gap-6">
       <section className="rounded-card border border-border-strong bg-surface p-6">
         <h2 className="text-micro text-text-tertiary">What it is</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">

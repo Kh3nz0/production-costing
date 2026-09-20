@@ -10,7 +10,7 @@ import type { UnitOption } from '@/lib/item-types';
 export function ProductForm({ units }: { units: UnitOption[] }) {
   const [state, action, pending] = useActionState(createProduct, {});
   return (
-    <form action={action} className="mt-6 max-w-[820px] space-y-6">
+    <form action={action} className="mt-6 max-w-form-lg space-y-6">
       <section className="rounded-card border border-border-strong bg-surface p-6">
         <h2 className="text-heading-sm text-text-primary">Product</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">

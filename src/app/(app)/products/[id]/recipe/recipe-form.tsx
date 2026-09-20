@@ -258,7 +258,7 @@ export function RecipeForm({
       >
         Add a line
       </button>
-      <label className="block max-w-[620px] text-caption text-text-secondary">
+      <label className="block max-w-form text-caption text-text-secondary">
         Recipe notes
         <input name="notes" defaultValue={notes ?? ''} className={CONTROL} />
       </label>

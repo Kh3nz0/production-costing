@@ -1,10 +1,11 @@
 import { ButtonLink } from '@/components/ui/button-link';
+import { EmptyState } from '@/components/ui/empty-state';
 import { formatPercent, toDecimal } from '@/lib/decimal';
 import { Money } from '@/lib/money';
 import { requireOrg } from '@/lib/org';
 import { listSales } from '@/lib/runs';
 
-export const metadata = { title: 'Sales — Production Costing' };
+export const metadata = { title: 'Sales' };
 
 const TH = 'px-4 py-3 text-left text-caption font-medium text-text-secondary';
 const TD = 'px-4 py-3 text-body-sm text-text-primary';
@@ -26,10 +27,14 @@ export default async function SalesPage() {
       </div>
 
       {sales.length === 0 ? (
-        <p className="text-body mt-6 rounded-card border border-border-strong bg-surface p-6 text-text-secondary">
-          Nothing sold yet. A sale takes its cost from the stock it came out of, so what it earned
-          is worked out from what those units actually cost to make.
-        </p>
+        <EmptyState
+          title="Nothing sold yet"
+          action={<ButtonLink href="/sales/new">Record a sale</ButtonLink>}
+        >
+          A sale takes its cost from the stock it came out of, so what it earned is worked out from
+          what those units actually cost to make &mdash; not from a guess, and not from
+          today&rsquo;s material prices.
+        </EmptyState>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
           <table className="w-full min-w-[46rem]">

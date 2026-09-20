@@ -8,7 +8,7 @@ import { PAGE_SIZE, runReport } from '@/lib/reports';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return { title: `${reportBySlug(slug)?.title ?? 'Report'} — Production Costing` };
+  return { title: `${reportBySlug(slug)?.title ?? 'Report'}` };
 }
 
 const TH = 'px-4 py-3 text-left text-caption font-medium text-text-secondary';

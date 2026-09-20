@@ -7,7 +7,7 @@ import { Money } from '@/lib/money';
 import { formatQuantity, formatRate, toDecimal } from '@/lib/decimal';
 import { StatusBadge } from '@/components/ui/status-badge';
 
-export const metadata = { title: 'Items — Production Costing' };
+export const metadata = { title: 'Items' };
 
 function stockValue(item: ItemRow): string {
   if (item.avg_unit_cost === null) return '—';

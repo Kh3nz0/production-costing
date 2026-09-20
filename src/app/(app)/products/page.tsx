@@ -5,7 +5,7 @@ import { getProduct, getProductCost, listProducts } from '@/lib/products';
 import { formatCalculationAmount, toDecimal } from '@/lib/decimal';
 import { businessDate } from '@/lib/business-date';
 
-export const metadata = { title: 'Products — Production Costing' };
+export const metadata = { title: 'Products' };
 
 export default async function ProductsPage({
   searchParams,
@@ -39,7 +39,7 @@ export default async function ProductsPage({
         </div>
         <ButtonLink href="/products/new">New product</ButtonLink>
       </div>
-      <form method="get" className="mt-6 flex max-w-[520px] gap-2">
+      <form method="get" className="mt-6 flex max-w-form gap-2">
         <label className="sr-only" htmlFor="product-search">
           Search products
         </label>

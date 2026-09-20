@@ -304,7 +304,7 @@ function history(
 export async function generateMetadata({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;
   const title = sections.find(([key]) => key === section)?.[1] ?? 'Settings';
-  return { title: `${title} — Production Costing` };
+  return { title: `${title}` };
 }
 
 export default async function SettingsSection({

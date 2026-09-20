@@ -42,7 +42,7 @@ export function StartRunForm({
   }
 
   return (
-    <form action={action} className="mt-6 flex max-w-[640px] flex-col gap-4">
+    <form action={action} className="mt-6 flex max-w-form-lg flex-col gap-4">
       <label className="text-caption text-text-secondary">
         Product
         <select
