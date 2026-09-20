@@ -69,7 +69,54 @@ export default async function InventoryPage({
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
-          <table className="w-full min-w-[40rem] text-left">
+          {/* Read down on a phone, across on a desktop. Seven columns at 390px
+              is either a crush or a sideways scroll, and both hide something. */}
+          <ul className="divide-y divide-border-strong lg:hidden">
+            {shown.map((item) => {
+              const badge = stockStatus(item);
+              const unit = item.base_unit?.code;
+              return (
+                <li key={item.id} className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/items/${item.id}`}
+                      className="text-body font-medium text-text-primary underline-offset-2"
+                    >
+                      {item.name}
+                    </Link>
+                    <StatusBadge status={badge.status} label={badge.label} />
+                  </div>
+                  <p className="text-caption mt-1 text-text-secondary">
+                    {itemTypeLabel(item.item_type)}
+                  </p>
+                  <dl className="mt-3 grid grid-cols-3 gap-3">
+                    {(
+                      [
+                        ['On hand', formatQuantity(item.qty_on_hand, unit)],
+                        [
+                          'Unit cost',
+                          item.avg_unit_cost === null ? '—' : formatRate(item.avg_unit_cost),
+                        ],
+                        [
+                          'Reorder at',
+                          item.reorder_point === null
+                            ? '—'
+                            : formatQuantity(item.reorder_point, unit),
+                        ],
+                      ] as const
+                    ).map(([label, value]) => (
+                      <div key={label}>
+                        <dt className="text-caption text-text-tertiary">{label}</dt>
+                        <dd className="text-body-sm tabular text-text-primary">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
+
+          <table className="hidden w-full min-w-[40rem] text-left lg:table">
             <thead>
               <tr className="bg-surface-sunken">
                 {['Item', 'Type', 'On hand', 'Unit cost', 'Value', 'Reorder at', 'Status'].map(

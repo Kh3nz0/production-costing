@@ -134,7 +134,53 @@ export default async function ItemsPage({
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
-          <table className="w-full min-w-[40rem] text-left">
+          {/*
+            A card each below `lg`, a table above.
+            A six-column table on a 390px screen either crushes its columns or
+            scrolls sideways, and both hide the column you were looking for. The
+            same rows, read down instead of across.
+          */}
+          <ul className="divide-y divide-border-strong lg:hidden">
+            {rows.map((item) => {
+              const badge = stockStatus(item);
+              return (
+                <li key={item.id} className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/items/${item.id}`}
+                      className="text-body font-medium text-text-primary underline-offset-2"
+                    >
+                      {item.name}
+                    </Link>
+                    <StatusBadge status={badge.status} label={badge.label} />
+                  </div>
+                  <p className="text-caption mt-1 text-text-secondary">
+                    {itemTypeLabel(item.item_type)}
+                    {item.sku === null ? '' : ` · ${item.sku}`}
+                  </p>
+                  <dl className="mt-3 grid grid-cols-3 gap-3">
+                    {(
+                      [
+                        ['On hand', formatQuantity(item.qty_on_hand, item.base_unit?.code)],
+                        [
+                          'Unit cost',
+                          item.avg_unit_cost === null ? '—' : formatRate(item.avg_unit_cost),
+                        ],
+                        ['Value', stockValue(item)],
+                      ] as const
+                    ).map(([label, value]) => (
+                      <div key={label}>
+                        <dt className="text-caption text-text-tertiary">{label}</dt>
+                        <dd className="text-body-sm tabular text-text-primary">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
+
+          <table className="hidden w-full min-w-[40rem] text-left lg:table">
             <thead>
               <tr className="bg-surface-sunken">
                 {['Item', 'Type', 'On hand', 'Unit cost', 'Value', 'Status'].map((h) => (

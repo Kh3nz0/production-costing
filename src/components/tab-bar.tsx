@@ -68,7 +68,15 @@ export function TabBar() {
                 }`}
               >
                 <Icon className="size-icon-md shrink-0" aria-hidden />
-                <span className="text-micro">{tab.label}</span>
+                {/*
+                  Not `text-micro`. That style is an eyebrow — uppercase with
+                  0.06em of tracking — which made "PRODUCTION" wider than the
+                  78px a fifth of a 390px screen gives it, so the labels ran
+                  into each other. A tab label is a name, not an eyebrow.
+                */}
+                <span className="w-full truncate px-1 text-center text-[11px] leading-4">
+                  {tab.label}
+                </span>
               </Link>
             </li>
           );
