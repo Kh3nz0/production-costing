@@ -475,7 +475,18 @@ The ledger shows four consumption movements and one output movement, and the Ite
 
 **Done when:** every card's figure is reproduced by a report; low stock, below-target margin, overhead recovery and the VAT indicator correct; no card without a report behind it.
 
-**Status: built, awaiting the live walkthrough.** 240 tests pass. No migration: the dashboard reads what the previous stages already write.
+**Status: done.** 20 September 2026. 240 tests pass. No migration: the dashboard reads what the previous stages already write. Every figure was checked against the live data it came from.
+
+| Card            | Live                      | Reconciles as                                                                               |
+| --------------- | ------------------------- | ------------------------------------------------------------------------------------------- |
+| Inventory value | ₱3,226.26                 | 2,057.93 filament + 432.32 switches + 92.50 rings + 44.40 bags + 599.11 for seven keychains |
+| Production cost | ₱0.00, 0 runs             | correct: the only run is dated 1 January, so September had no production                    |
+| Revenue         | ₱240.00, 2 sales          | both live sales                                                                             |
+| Contribution    | −₱16.58, −10.7%           | 19.41 + (−35.99) over ₱154.01 of net revenue                                                |
+| Overhead        | −₱16.58 of ₱9,500.00      | ₱9,516.58 short, with the bar empty rather than drawn negative                              |
+| Low stock       | switch 51/120, bag 37/100 | the key ring is excluded, having no reorder point                                           |
+
+**One defect, F-70:** the waste rate read a bare 100.0%. True — in a month whose only material movement was a ₱73.11 purge, everything that left the shelf was waste — and unreadable without its denominator. The card now carries `₱73.11 wasted of ₱73.11 used`. That is the fifth instance of the same shape in this project, after F-48, F-55, F-56 and F-61.
 
 **"No card without a report behind it" is kept true by construction.** Every figure is a function in `src/lib/metrics.ts`, and S11's reports will call the same functions. A card and a report cannot disagree when there is one definition. The dashboard computes nothing of its own; it lays out what that module returns.
 

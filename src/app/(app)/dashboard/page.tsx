@@ -129,7 +129,14 @@ export default async function DashboardPage() {
         <Stat
           label="Waste rate"
           value={waste.rate === null ? '—' : formatPercent(waste.rate)}
-          sub="Value of material wasted against value used"
+          // A bare 100.0% reads as a catastrophe. It is literally true in a
+          // month where the only material that left the shelf was waste, and
+          // the two amounts beside it say which of those happened.
+          sub={
+            waste.rate === null
+              ? 'No material left the shelf this month'
+              : `${waste.wasted.format()} wasted of ${waste.consumed.format()} used`
+          }
         />
         <Stat
           label="Failure rate"
