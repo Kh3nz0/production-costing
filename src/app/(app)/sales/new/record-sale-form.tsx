@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { formatPercent, formatQuantity, toDecimal } from '@/lib/decimal';
 import { Money } from '@/lib/money';
-import { marginsDiverge, saleResult, type SaleLine } from '@/lib/sales';
+import { lineRevenue, marginsDiverge, saleResult, type SaleLine } from '@/lib/sales';
 import type { ChannelWithFees } from '@/lib/products';
 import type { SellableItem } from '@/lib/runs';
 
@@ -53,6 +53,10 @@ export function RecordSaleForm({
   const [channelId, setChannelId] = useState('');
   const [commission, setCommission] = useState('');
   const [paymentFee, setPaymentFee] = useState('');
+  // Once either fee is typed into, it stops following the channel's rate. The
+  // rate is a default, and a default that overwrites what somebody entered is
+  // not a default.
+  const [feesEdited, setFeesEdited] = useState(false);
   const [otherCosts, setOtherCosts] = useState('');
   const [shippingCharged, setShippingCharged] = useState('');
   const [shippingPaid, setShippingPaid] = useState('');
@@ -80,9 +84,28 @@ export function RecordSaleForm({
     ];
   });
 
+  // The fees a channel's rates imply, against the revenue as it stands now.
+  // The first version filled these once, at the moment the channel was picked,
+  // when the revenue was still zero — so a sale on Shopee showed ₱0.00 of
+  // commission (F-65). A percentage of revenue has to follow the revenue.
+  const revenueSoFar = Money.sum(saleLines.map(lineRevenue));
+  const impliedCommission =
+    channel === null
+      ? null
+      : Money.fromDecimal(revenueSoFar.timesExact(toDecimal(channel.commissionRate)));
+  const impliedPaymentFee =
+    channel === null
+      ? null
+      : Money.fromDecimal(revenueSoFar.timesExact(toDecimal(channel.paymentRate)));
+
+  const commissionShown =
+    feesEdited || impliedCommission === null ? commission : impliedCommission.toString();
+  const paymentFeeShown =
+    feesEdited || impliedPaymentFee === null ? paymentFee : impliedPaymentFee.toString();
+
   const result = saleResult(saleLines, {
-    commission: money(commission),
-    paymentFee: money(paymentFee),
+    commission: money(commissionShown),
+    paymentFee: money(paymentFeeShown),
     otherCosts: money(otherCosts),
     shippingCharged: money(shippingCharged),
     shippingPaid: money(shippingPaid),
@@ -129,24 +152,7 @@ export function RecordSaleForm({
               <select
                 name="channel_id"
                 value={channelId}
-                onChange={(e) => {
-                  setChannelId(e.target.value);
-                  // The rate fills the field; the amount is what gets stored,
-                  // so a later rate change cannot rewrite this sale.
-                  const picked = channels.find((c) => c.id === e.target.value);
-                  if (picked) {
-                    setCommission(
-                      Money.fromDecimal(
-                        result.revenue.timesExact(toDecimal(picked.commissionRate)),
-                      ).toString(),
-                    );
-                    setPaymentFee(
-                      Money.fromDecimal(
-                        result.revenue.timesExact(toDecimal(picked.paymentRate)),
-                      ).toString(),
-                    );
-                  }
-                }}
+                onChange={(e) => setChannelId(e.target.value)}
                 className={CONTROL}
               >
                 <option value="">Direct</option>
@@ -277,8 +283,11 @@ export function RecordSaleForm({
               type="number"
               step="any"
               min="0"
-              value={commission}
-              onChange={(e) => setCommission(e.target.value)}
+              value={commissionShown}
+              onChange={(e) => {
+                setFeesEdited(true);
+                setCommission(e.target.value);
+              }}
               helper={
                 channel
                   ? `Prefilled at ${formatPercent(toDecimal(channel.commissionRate))} of revenue from this channel's current rate. Change it if the platform charged something else.`
@@ -291,8 +300,11 @@ export function RecordSaleForm({
               type="number"
               step="any"
               min="0"
-              value={paymentFee}
-              onChange={(e) => setPaymentFee(e.target.value)}
+              value={paymentFeeShown}
+              onChange={(e) => {
+                setFeesEdited(true);
+                setPaymentFee(e.target.value);
+              }}
               helper={
                 channel
                   ? `Prefilled at ${formatPercent(toDecimal(channel.paymentRate))} of revenue.`
@@ -361,8 +373,8 @@ export function RecordSaleForm({
               'Gross margin',
               result.grossMargin === null ? '—' : formatPercent(result.grossMargin),
             )}
-            {row('Commission', money(commission).format())}
-            {row('Payment fee', money(paymentFee).format())}
+            {row('Commission', money(commissionShown).format())}
+            {row('Payment fee', money(paymentFeeShown).format())}
             {row('Other costs', money(otherCosts).format())}
             {row(
               'Shipping result',
