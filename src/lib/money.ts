@@ -154,14 +154,21 @@ export class Money {
     return this.toDecimal().toFixed(2);
   }
 
-  /** `₱1,234.56`. Always two places, always grouped. */
+  /**
+   * `₱1,234.56`. Always two places, always grouped.
+   *
+   * A negative uses a real minus sign, U+2212, not a hyphen. The interface puts
+   * a signed quantity next to a signed amount on the same row, and a hyphen
+   * beside a minus reads as two different things. `toJSON` keeps the ASCII
+   * hyphen, because that is a data value rather than a display one.
+   */
   format(): string {
     const negative = this.centavos < 0n;
     const magnitude = negative ? -this.centavos : this.centavos;
     const whole = magnitude / 100n;
     const fraction = magnitude % 100n;
     const text = `₱${groupDigits(whole.toString())}.${fraction.toString().padStart(2, '0')}`;
-    return negative ? `-${text}` : text;
+    return negative ? `−${text}` : text;
   }
 
   toString(): string {

@@ -23,7 +23,7 @@ describe('Money representation', () => {
     expect(Money.parse('1234.56').format()).toBe('₱1,234.56');
     expect(Money.parse('1146300').format()).toBe('₱1,146,300.00');
     expect(Money.parse('0.5').format()).toBe('₱0.50');
-    expect(Money.parse('-1234.5').format()).toBe('-₱1,234.50');
+    expect(Money.parse('-1234.5').format()).toBe('\u2212₱1,234.50');
   });
 
   it('survives a sum that a float would drift on', () => {
@@ -49,7 +49,7 @@ describe('rounding is half-up, not bankers', () => {
   });
 
   it('rounds a negative half away from zero too', () => {
-    expect(Money.parse('-0.025').format()).toBe('-₱0.03');
+    expect(Money.parse('-0.025').format()).toBe('\u2212₱0.03');
   });
 });
 
@@ -191,5 +191,35 @@ describe('the float ban is enforced by the types, not only by lint', () => {
 
   it('never divides by zero silently', () => {
     expect(() => Money.parse('10').dividedByExact('0')).toThrow(/zero/);
+  });
+});
+
+describe('a negative reads the same everywhere it appears', () => {
+  // The movements table puts a signed quantity in one column and a signed
+  // amount in the next. A hyphen beside a minus sign looks like two different
+  // kinds of negative, so every display formatter uses U+2212.
+  const MINUS = '−';
+
+  it('uses a real minus sign, never a hyphen', () => {
+    expect(Money.parse('-73.11').format()).toBe(`${MINUS}₱73.11`);
+    expect(formatQuantity('-60', 'g')).toBe(`${MINUS}60 g`);
+    expect(formatRate('-1.5')).toBe(`${MINUS}₱1.50`);
+    expect(formatPercent('-0.05')).toBe(`${MINUS}5.0%`);
+    expect(formatCalculationAmount('-23.2436')).toBe(`${MINUS}₱23.2436`);
+
+    for (const text of [
+      Money.parse('-1').format(),
+      formatQuantity('-1'),
+      formatRate('-1'),
+      formatPercent('-1'),
+    ]) {
+      expect(text.includes('-'), `${text} still contains a hyphen`).toBe(false);
+    }
+  });
+
+  it('keeps the ASCII hyphen in the stored value', () => {
+    // toJSON is a data value, not a display one: a numeric column and a CSV
+    // cell both need the plain form.
+    expect(Money.parse('-73.11').toJSON()).toBe('-73.11');
   });
 });

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requireOrg } from '@/lib/org';
 import { isItemType } from '@/lib/item-types';
 import { Money } from '@/lib/money';
+import { movementTypeFor } from '@/lib/stock-types';
 
 export interface ActionState {
   error?: string;
@@ -257,4 +258,78 @@ export async function receivePurchase(form: FormData): Promise<void> {
   revalidatePath('/purchases');
   revalidatePath(`/purchases/${id}`);
   revalidatePath('/items');
+}
+
+// ---------------------------------------------------------------------------
+// Stock
+// ---------------------------------------------------------------------------
+
+/**
+ * Adjusting stock is an RPC because the delta has to be computed from a locked
+ * balance. Reading the quantity, working out the difference and writing the
+ * movement as three client calls would let two adjustments both start from the
+ * same figure.
+ */
+export async function adjustStock(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireOrg();
+
+  const itemId = text(form, 'item_id');
+  const newQty = text(form, 'new_qty');
+  const reason = text(form, 'reason');
+  const kind = text(form, 'kind');
+  const movementType = movementTypeFor(kind);
+
+  if (itemId === '') return { error: 'Choose the item you are adjusting.' };
+  if (newQty === '') return { error: 'Enter what is actually there.' };
+  if (movementType === null) return { error: 'Choose what kind of adjustment this is.' };
+  if (reason === '') {
+    return { error: 'Required. Future you will want to know why this number moved.' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('adjust_stock', {
+    p_item_id: itemId,
+    p_new_qty: newQty,
+    p_movement_type: movementType,
+    p_reason: reason,
+  });
+
+  if (error !== null) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/inventory');
+  revalidatePath('/items');
+  redirect('/inventory/movements');
+}
+
+export async function recordOpeningBalance(
+  _prev: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  await requireOrg();
+
+  const itemId = text(form, 'item_id');
+  const qty = text(form, 'qty');
+  const unitCost = optional(form, 'unit_cost');
+  const asOf = text(form, 'as_of');
+
+  if (itemId === '') return { error: 'Choose the item.' };
+  if (qty === '') return { error: 'Enter what is on the shelf.' };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('record_opening_balance', {
+    p_item_id: itemId,
+    p_qty: qty,
+    p_unit_cost: unitCost,
+    ...(asOf === '' ? {} : { p_occurred_at: asOf }),
+  });
+
+  if (error !== null) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/inventory');
+  revalidatePath('/items');
+  redirect('/inventory/movements');
 }

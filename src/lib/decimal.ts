@@ -59,14 +59,35 @@ export function roundHalfUp(value: Numeric, places: number): Decimal {
 
 const GROUP = /\B(?=(\d{3})+(?!\d))/g;
 
-/** Insert thousands separators into the integer part of a plain decimal string. */
+/**
+ * Insert thousands separators into the integer part of a plain decimal string.
+ *
+ * A negative gets a real minus sign, U+2212, for the same reason Money.format
+ * does: the interface puts signed quantities beside signed amounts, and a hyphen
+ * next to a minus reads as two different things. These are display functions
+ * only — nothing here produces a value for storage.
+ */
 function group(plain: string): string {
   const negative = plain.startsWith('-');
   const bare = negative ? plain.slice(1) : plain;
   const dot = bare.indexOf('.');
   const whole = dot === -1 ? bare : bare.slice(0, dot);
   const fraction = dot === -1 ? '' : bare.slice(dot);
-  return `${negative ? '-' : ''}${whole.replace(GROUP, ',')}${fraction}`;
+  return `${negative ? '\u2212' : ''}${whole.replace(GROUP, ',')}${fraction}`;
+}
+
+/**
+ * A peso amount at a fixed number of places.
+ *
+ * The sign goes outside the currency symbol: `−₱1.50`, never `₱−1.50`. Putting
+ * the peso first and letting the grouped digits carry their own minus produced
+ * the second form, which a test caught.
+ */
+function peso(value: Numeric, places: number): string {
+  const rounded = roundHalfUp(value, places);
+  const negative = rounded.isNegative();
+  const digits = group(rounded.abs().toFixed(places));
+  return `${negative ? '\u2212' : ''}₱${digits}`;
 }
 
 /**
@@ -76,7 +97,7 @@ function group(plain: string): string {
 export function formatRate(value: Numeric): string {
   const d = toDecimal(value);
   const places = d.abs().gte(1) ? 2 : 4;
-  return `₱${group(roundHalfUp(d, places).toFixed(places))}`;
+  return peso(d, places);
 }
 
 /**
@@ -84,11 +105,11 @@ export function formatRate(value: Numeric): string {
  * reconcile on screen. Six places for a unit cost, four for a component amount.
  */
 export function formatCalculationRate(value: Numeric): string {
-  return `₱${group(roundHalfUp(value, 6).toFixed(6))}`;
+  return peso(value, 6);
 }
 
 export function formatCalculationAmount(value: Numeric): string {
-  return `₱${group(roundHalfUp(value, 4).toFixed(4))}`;
+  return peso(value, 4);
 }
 
 /** A quantity: up to three places, trailing zeros trimmed, never bare. */

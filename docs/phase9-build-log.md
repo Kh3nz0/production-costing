@@ -227,3 +227,46 @@ The status badges came out right off each item's own reorder point without being
 The preview threw `[DecimalError] Invalid argument` on the form's **first render**. `Money.parse(extras.shipping ?? '0')` looks safe and is not: an untouched input is `''`, which is neither null nor undefined, so `??` passes it straight through. The most likely input the preview will ever receive was the one that crashed it. Empty now reads as zero, and three tests cover the untouched, empty-line and partly-typed states.
 
 A missing space rendered "₱1.218545 / gfrom ₱2,437.09". Cosmetic, and the sort of thing only reading the real output catches.
+
+---
+
+## S4 — Stock is a ledger, not a number
+
+**Done when:** every change is a movement carrying resulting quantity and average; `rebuild_item_balances` reproduces every cached figure exactly; an opening balance needs no purchase; an adjustment requires a reason; negative stock refused with the spec's message; valuation as of a past date correct after later receipts.
+
+**Status: done.** 20 September 2026. 131 tests passing, verified end to end against the live project.
+
+| Requirement                                               | Evidence                                                                                                                    |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Every change is a movement carrying the resulting balance | A three-step history reads back as opening balance → purchase → waste, at 300 / 2,300 / 2,290, with an average on every row |
+| `rebuild_item_balances` reproduces every cached figure    | Asserted after adjustments as well as receipts                                                                              |
+| An opening balance needs no purchase                      | 300 g at ₱1.10 with nothing bought, worth ₱330.00                                                                           |
+| An adjustment requires a reason                           | Blank and null both refused, and the reason is kept on the movement                                                         |
+| Negative stock refused with the spec's message            | _"This would leave -40 g of PLA Basic. Record a purchase or an opening balance first, or reduce the quantity."_             |
+| Valuation as of a past date, after later receipts         | See below                                                                                                                   |
+
+### Valuation is a lookup, and that is the point
+
+Value an item at 31 March: 300 g, ₱330.00. Receive 2,000 g dated 16 September. Re-value 31 March: **still 300 g, still ₱330.00.** A movement recorded later cannot change what an earlier date was worth, because every row stores the balance and average it produced rather than the reader re-adding history.
+
+Confirmed live as well: 19 September reports nothing on hand, 20 September reports ₱3,126.89 — which is the ₱3,200.00 of received stock less the ₱73.11 of waste recorded against it.
+
+### Three rules the ledger now enforces
+
+**An adjustment never moves the unit cost.** Only a purchase does, because only a purchase involves money changing hands. Six units lost at ₱2.50 records −₱15.00 of value and leaves the average at ₱2.50 (D-117).
+
+**An opening balance is only valid as an item's first movement.** Allowing one later would make it a back door for setting the average directly, and that figure has to stay derived from what was actually paid. A second one is refused, and the form does not offer items that already have history (D-118).
+
+**Unknown cost stays unknown.** Stock whose cost nobody has established values at null, not ₱0.00, and contributes nothing to a total. It is not worthless; it is worth an amount nobody has worked out, and a guess inside a total is worse than a visible gap. Both the on-hand and valuation pages say so on the page (D-119).
+
+### A reading of the spec, stated
+
+The Adjust stock screen offers four options — Stock count, Damage, Waste, Correction — which map onto three ledger movement types. A count and a correction both record an `adjustment`; damage and waste record themselves. That is deliberate: the ledger has to distinguish a real loss of goods from a correction of the record, because the failures-and-waste report depends on that line being drawn. The reason field carries the specifics either way.
+
+### Three defects the live walkthrough found
+
+**The valuation page listed items that were not held.** The filter read `r.quantity !== '0'`, and `quantity` is `numeric(20,6)` arriving as `'0.000000'`, so it never matched — every item appeared at zero and the page then reported them all as having no established cost. It also carried a meaningless `Number.isFinite(1)` left over from an edit. Now filtered through `toDecimal(...).gt(0)`.
+
+**Two different minus signs sat in adjacent columns.** The movements table showed `−60 g` with a real minus and `-₱73.11` with a hyphen, because `Money.format` used ASCII. Every display formatter now uses U+2212; `toJSON` keeps the hyphen, because that is a data value rather than a display one (D-120).
+
+**And fixing that surfaced a third:** `formatRate(-1.5)` produced `₱−1.50`, with the sign inside the currency symbol. The peso was being prefixed to digits that carried their own minus. A test written for the second defect caught it.
