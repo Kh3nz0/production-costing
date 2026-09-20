@@ -404,7 +404,7 @@ A snapshot was saved against Shopee and read back as 2026-09-20 · ₱93.25 · �
 
 **Done when:** the F-11 example reproduces ₱82.93 per accepted unit and ₱535.89 production loss; completion is one transaction; changing a material price afterwards leaves the run unchanged, proven by test; a completed run cannot be edited, only reversed.
 
-**Status: built, awaiting the live walkthrough.** 212 tests pass. `0012_production_runs.sql` is written and proven against PGlite; it has not been applied to the live project yet.
+**Status: done.** 20 September 2026. 215 tests pass. `0012` and `0013` are live, and every figure was confirmed on the rendered page in a live owner session.
 
 `src/lib/production.ts` holds F-11 and F-12, and the database holds them again in `complete_production_run`, because the screen has to show the figures before the run is completed and the database has to be the one that writes them. Both are tested against the worked example.
 
@@ -427,3 +427,20 @@ A snapshot was saved against Shopee and read back as 2026-09-20 · ₱93.25 · �
 **A gap the maths found.** F-11's general formula leaves the cost of the _expected_ failures capitalised, which is correct while there is at least one accepted unit to carry it and impossible when there are none. F-11 states that edge separately — with nothing accepted the whole run is the loss — and the implementation now does too, in both the TypeScript and the SQL. The test that caught it asserted ₱76.56 where the code said ₱76.55; the test's arithmetic was wrong and the reading behind it was the thing worth fixing.
 
 **Not built, and not required by the done-when:** a `planned` status that can be started later. `start_production_run` creates a run already in progress, because the Start screen's second button ("Save as planned") has no screen behind it yet.
+
+### The live walkthrough
+
+A 13-unit run of the Clickable Keychain, 9 accepted and 4 failed, dated 1 January so it costed itself at January's ₱12.50 equipment rate rather than today's ₱12.00. Every figure matched what was computed independently from the live rates beforehand.
+
+| Figure                      | Live             |
+| --------------------------- | ---------------- |
+| Actual run cost             | ₱1,001.38        |
+| Production loss             | ₱231.09          |
+| Cost carried into stock     | ₱770.29          |
+| Cost per accepted unit      | ₱85.59           |
+| Against a ₱81.08 estimate   | ₱4.50 over, 5.6% |
+| The naive figure it avoided | ₱111.26          |
+
+The ledger shows four consumption movements and one output movement, and the Items page carries a finished product that had never been stock before: 9 pc at ₱85.59, ₱770.29. Money went out as filament and switches and came back as nine things on a shelf worth a defensible amount.
+
+**Three defects, all found by reading the rendered page.** F-62: the Expected column read `251.16 g` while the Actual input beside it defaulted to `251.160000`, and the estimate printed with no currency. F-63: the machine row read 4.55 h at ₱12.50 with a cost of ₱63.14, because the derived electricity was folded into it — the one row on the page that did not multiply out was the one carrying two things. F-64, the serious one: the run was dated 1 January and consumed filament purchased on 20 September, so the January-dated row stored September's balance and every valuation between those dates was wrong. That is now refused by `0013` (D-128).
