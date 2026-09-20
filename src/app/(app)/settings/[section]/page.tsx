@@ -393,6 +393,14 @@ export default async function SettingsSection({
             {label}
           </Link>
         ))}
+        {/* Import is a page of its own rather than a section of this one: it
+            uploads a file and shows a dry run, which is not a settings form. */}
+        <Link
+          href="/settings/import"
+          className="text-body-sm rounded-pill bg-surface px-3 py-2 text-text-secondary"
+        >
+          Import
+        </Link>
       </nav>
       <div className="space-y-6">
         {current === 'business' &&
