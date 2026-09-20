@@ -1,5 +1,8 @@
 /** Client-safe stock vocabulary. */
 
+import { formatExactRate, formatQuantity, formatRate, toDecimal } from './decimal';
+import { Money } from './money';
+
 export const MOVEMENT_LABEL = {
   opening_balance: 'Opening balance',
   purchase_received: 'Purchase received',
@@ -62,4 +65,38 @@ export type AdjustmentKind = (typeof ADJUSTMENT_KINDS)[number]['value'];
 export function movementTypeFor(kind: string): MovementType | null {
   const found = ADJUSTMENT_KINDS.find((k) => k.value === kind);
   return found === undefined ? null : found.movementType;
+}
+
+/**
+ * The readout under the opening-balance form: what the quantity and the unit
+ * cost multiply to.
+ *
+ * It exists because an opening balance cannot be corrected. It is only valid as
+ * an item's first movement, so a mistyped unit cost costs you the item - you
+ * archive it and build it again. ₱50.00 and ₱2.50 look alike in a number field
+ * and not at all alike as ₱2,500.00 against ₱125.00.
+ *
+ * Every input can be empty, half-typed or nonsense while someone types, and
+ * that is the state that crashed the purchase preview (F-43). Anything that
+ * does not parse returns null, which the form renders as nothing at all.
+ */
+export function openingBalanceValue(
+  qty: string,
+  unitCost: string,
+  unitCode: string | null,
+): string | null {
+  if (qty.trim() === '' || unitCost.trim() === '') return null;
+  try {
+    const quantity = toDecimal(qty);
+    const cost = toDecimal(unitCost);
+    if (quantity.isNegative() || cost.isNegative()) return null;
+    // Echo the cost as it was typed. The usual rate formatter stops at two
+    // places above ₱1.00, which would print a typed ₱1.115 as ₱1.12 beside a
+    // total computed from ₱1.115 - three numbers on one line that do not
+    // multiply. Below two places it still pads, so ₱2.50 does not read ₱2.5.
+    const rate = cost.decimalPlaces() > 2 ? formatExactRate(cost) : formatRate(cost);
+    return `${formatQuantity(quantity, unitCode ?? undefined)} × ${rate} = ${Money.fromDecimal(quantity.times(cost)).format()}`;
+  } catch {
+    return null;
+  }
 }

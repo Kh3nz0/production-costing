@@ -5,7 +5,7 @@ import { useActionState, useState } from 'react';
 import { adjustStock, recordOpeningBalance, type ActionState } from '../../actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
-import { ADJUSTMENT_KINDS } from '@/lib/stock-types';
+import { ADJUSTMENT_KINDS, openingBalanceValue } from '@/lib/stock-types';
 import { formatQuantity, toDecimal } from '@/lib/decimal';
 
 const initial: ActionState = {};
@@ -32,6 +32,7 @@ export function AdjustForm({
   );
   const [itemId, setItemId] = useState('');
   const [newQty, setNewQty] = useState('');
+  const [unitCost, setUnitCost] = useState('');
 
   const item = items.find((i) => i.id === itemId);
   const choices = opening ? items.filter((i) => !i.has_history) : items;
@@ -39,6 +40,10 @@ export function AdjustForm({
   // The readout the spec asks for: "Change: [+/−][qty] [unit]". Shown from the
   // current balance rather than typed, so the user states what is there and the
   // difference is derived.
+  const openingValue = opening
+    ? openingBalanceValue(newQty, unitCost, item?.unit_code ?? null)
+    : null;
+
   let change: string | null = null;
   if (!opening && item !== undefined && newQty !== '') {
     try {
@@ -133,8 +138,16 @@ export function AdjustForm({
             type="number"
             step="any"
             min="0"
+            value={unitCost}
+            onChange={(e) => setUnitCost(e.target.value)}
             helper="If you do not know what it cost, leave this blank. The item will show no unit cost until your next purchase, which is more honest than a guess."
           />
+
+          {openingValue !== null ? (
+            <p className="text-body-sm tabular rounded-control bg-surface-sunken px-4 py-3 text-text-primary">
+              {openingValue}
+            </p>
+          ) : null}
           <Field
             label="As of date"
             name="as_of"
