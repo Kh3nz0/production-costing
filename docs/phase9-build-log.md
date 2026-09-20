@@ -397,3 +397,33 @@ These are the spec's ₱154.88 / ₱166.54 / ₱86.65 / ₱99.92 carried onto th
 A snapshot was saved against Shopee and read back as 2026-09-20 · ₱93.25 · ₱167.11 · 40.0%. Live, the table answers 401 to an anonymous read and the function 404 to an anonymous call.
 
 **One defect, and it was the third of its kind:** the sales-channel history showed the commission and neither the payment fee nor the fixed fee, though the back-solve divides by all three (F-61). A 2% payment fee was stored and unreadable. After F-55 and F-56, checking that a newly entered rate can be read back off the page is now the first thing done when any settings screen gains a rate.
+
+---
+
+## S8 — A production run is recorded, costed and locked
+
+**Done when:** the F-11 example reproduces ₱82.93 per accepted unit and ₱535.89 production loss; completion is one transaction; changing a material price afterwards leaves the run unchanged, proven by test; a completed run cannot be edited, only reversed.
+
+**Status: built, awaiting the live walkthrough.** 212 tests pass. `0012_production_runs.sql` is written and proven against PGlite; it has not been applied to the live project yet.
+
+`src/lib/production.ts` holds F-11 and F-12, and the database holds them again in `complete_production_run`, because the screen has to show the figures before the run is completed and the database has to be the one that writes them. Both are tested against the worked example.
+
+| Clause                               | Evidence                                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-11 reproduces                      | 765.55 g at ₱2.00 gives ₱1,531.10 actual, ₱535.89 loss, ₱995.21 capitalised, ₱82.9342 per accepted unit — through real SQL, not only the TypeScript                       |
+| Completion is one transaction        | A run whose material is short raises, writes nothing, and leaves the run in progress and the stock untouched                                                              |
+| A later price change leaves it alone | The filament average more than doubles by purchase afterwards; the run's three cost figures are byte-identical                                                            |
+| Cannot be edited                     | No update or delete grant on either table, so a hand edit is refused at the grant. Completing twice is refused by status                                                  |
+| Only reversed                        | Every movement gets an opposite pointing back at it by `reversal_of_id`, the reason is required and kept, the run becomes `cancelled`, and both halves stay on the record |
+
+**Three readings of the specification, stated rather than buried.**
+
+**No failure movement is written.** `inventory_movements` requires `quantity_change <> 0` and failed units never enter stock, so there is no quantity to record. The loss is not lost: material leaves at its full cost, finished goods enter at the capitalised cost, and the difference is the abnormal loss, recorded on the run. A zero-quantity movement would be a ledger row that changes no stock, which is what the ledger is not for.
+
+**Waste is consumption.** Material thrown away during a run left the shelf and was paid for, so it is a `waste` movement carrying its reason, and its cost is part of what the run cost.
+
+**Review is a section, not a third tab.** The content spec lists Consumption · Output · Review as tabs. Consumption and output are one form that has to be submitted together, and a tab that cannot be submitted from is a trap. The three appear as three sections of one page in the order the spec names them.
+
+**A gap the maths found.** F-11's general formula leaves the cost of the _expected_ failures capitalised, which is correct while there is at least one accepted unit to carry it and impossible when there are none. F-11 states that edge separately — with nothing accepted the whole run is the loss — and the implementation now does too, in both the TypeScript and the SQL. The test that caught it asserted ₱76.56 where the code said ₱76.55; the test's arithmetic was wrong and the reading behind it was the thing worth fixing.
+
+**Not built, and not required by the done-when:** a `planned` status that can be started later. `start_production_run` creates a run already in progress, because the Start screen's second button ("Save as planned") has no screen behind it yet.
