@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   TEMPLATES,
@@ -105,4 +107,33 @@ describe('the error file is the file you uploaded', () => {
     );
     expect(csv).toContain('"Row 2: no item named, try again"');
   });
+});
+
+describe('every definition matches the template file that ships with it', () => {
+  /**
+   * F-78. Twelve of the thirteen definitions were written from the
+   * specification's prose rather than from the files, so they named columns the
+   * templates do not have — `name` where the file says `supplier_name`. Every
+   * one of those uploads would have failed its required-field check on a file
+   * that was perfectly correct.
+   *
+   * This is the test that would have caught it on the first run, and it is the
+   * reason the two can no longer drift: the CSV in `data-templates/` is the
+   * contract, and this asserts the code agrees with it column for column.
+   */
+  const root = join(import.meta.dirname, '..', '..');
+
+  for (const template of TEMPLATES) {
+    it(`${template.code} names the columns the file has`, () => {
+      const header = readFileSync(join(root, 'data-templates', `${template.code}.csv`), 'utf8')
+        .split('\n')[0]!
+        .replace(/^﻿/, '')
+        .trim();
+      const actual = header.split(',').map((column) => column.trim());
+      expect(template.columns, `${template.code} columns`).toEqual(actual);
+      for (const field of template.required) {
+        expect(actual, `${template.code} requires ${field}`).toContain(field);
+      }
+    });
+  }
 });

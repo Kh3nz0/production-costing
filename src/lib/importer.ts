@@ -165,7 +165,11 @@ export async function dryRun(
 
     const number = (
       field: string,
-      { min, belowOne }: { min?: string; belowOne?: boolean } = {},
+      {
+        min,
+        belowOne,
+        belowHundred,
+      }: { min?: string; belowOne?: boolean; belowHundred?: boolean } = {},
     ) => {
       const value = row[field] ?? '';
       if (value === '') return;
@@ -185,6 +189,9 @@ export async function dryRun(
       }
       if (belowOne === true && parsed.gte(toDecimal('1'))) {
         fail(field, `${field.replaceAll('_', ' ')} ${value} must be below 1`, 'range');
+      }
+      if (belowHundred === true && parsed.gte(toDecimal('100'))) {
+        fail(field, `${field.replaceAll('_', ' ')} ${value} must be below 100`, 'range');
       }
     };
 
@@ -211,7 +218,7 @@ export async function dryRun(
 
     switch (template.code) {
       case '01-units':
-        number('factor_to_dimension_base', { min: '0' });
+        number('factor_to_base_unit', { min: '0' });
         break;
       case '02-items':
         reference('base_unit', lookups.units, 'unit');
@@ -227,16 +234,49 @@ export async function dryRun(
           seen.add(`sku:${key(row.sku!)}`);
         }
         break;
+      case '04-purchases':
+        if ((row.supplier_name ?? '') !== '')
+          reference('supplier_name', lookups.suppliers, 'supplier', true);
+        for (const field of [
+          'supplier_shipping_amount',
+          'discount_amount',
+          'duties_amount',
+          'other_landed_cost_amount',
+        ]) {
+          number(field, { min: '0' });
+        }
+        if ((row.purchase_ref ?? '') !== '') {
+          if (seen.has(`ref:${key(row.purchase_ref!)}`)) {
+            fail(
+              'purchase_ref',
+              `purchase reference ${row.purchase_ref} is used twice in this file`,
+              'duplicate',
+            );
+          }
+          seen.add(`ref:${key(row.purchase_ref!)}`);
+        }
+        break;
       case '05-purchase-lines':
-        reference('purchase_reference', lookups.purchases, 'purchase');
-        reference('item', lookups.items, 'item');
-        number('quantity', { min: '0' });
+        reference('purchase_ref', lookups.purchases, 'purchase');
+        reference('item_name', lookups.items, 'item');
+        if ((row.purchase_unit ?? '') !== '') reference('purchase_unit', lookups.units, 'unit');
+        number('quantity_ordered', { min: '0' });
+        number('quantity_received', { min: '0' });
         number('unit_price', { min: '0' });
+        number('line_discount_amount', { min: '0' });
         break;
       case '06-opening-stock':
-        reference('item', lookups.items, 'item');
-        number('quantity_base_unit', { min: '0' });
+        reference('item_name', lookups.items, 'item');
+        if ((row.unit ?? '') !== '') reference('unit', lookups.units, 'unit');
+        number('quantity_on_hand', { min: '0' });
         number('unit_cost', { min: '0' });
+        break;
+      case '07-equipment':
+        number('purchase_price', { min: '0' });
+        number('expected_productive_hours_in_recovery_period', { min: '0' });
+        number('measured_average_power_watts', { min: '0' });
+        number('annual_maintenance_allowance', { min: '0' });
+        number('annual_repair_allowance', { min: '0' });
         break;
       case '08-utility-rates':
         reference('unit', lookups.units, 'unit');
@@ -245,18 +285,28 @@ export async function dryRun(
       case '09-labor-activities':
         number('hourly_rate', { min: '0' });
         break;
+      case '10-overhead':
+        number('monthly_amount', { min: '0' });
+        break;
       case '11-products':
-        reference('base_unit', lookups.units, 'unit');
-        number('expected_failure_rate', { min: '0', belowOne: true });
-        number('target_margin', { min: '0', belowOne: true });
+        // The file asks for percentages, not fractions: a column headed
+        // `expected_failure_rate_percent` holds 5, and 5 as a fraction would be
+        // a 500% failure rate. Below 100 here, divided by 100 on apply.
+        number('expected_failure_rate_percent', { min: '0', belowHundred: true });
+        number('target_margin_percent', { min: '0', belowHundred: true });
+        number('minimum_margin_percent', { min: '0', belowHundred: true });
+        number('expected_output_quantity_per_run', { min: '0' });
         break;
       case '12-bom-lines':
-        reference('product', lookups.items, 'product');
+        reference('product_name', lookups.items, 'product');
         number('quantity_per_unit', { min: '0' });
+        number('expected_waste_percent', { min: '0' });
+        if ((row.unit ?? '') !== '') reference('unit', lookups.units, 'unit');
         break;
       case '13-sales-channels':
-        number('commission_rate', { min: '0', belowOne: true });
-        number('payment_rate', { min: '0', belowOne: true });
+        number('commission_fee_percent', { min: '0', belowHundred: true });
+        number('payment_fee_percent', { min: '0', belowHundred: true });
+        number('fixed_fee_per_order', { min: '0' });
         break;
       default:
         break;
@@ -340,6 +390,11 @@ export async function applyImport(
   const money = (value: string) =>
     value === '' ? '0' : Money.parse(value).toCentavos().toString();
   const nullable = (value: string) => (value === '' ? null : value);
+  // A column headed `..._percent` holds 5, and the column behind it stores
+  // 0.05. Getting this backwards gives a 500% failure rate — which every check
+  // downstream refuses, loudly, but only after the import has run.
+  const percentToFraction = (value: string) =>
+    value === '' ? null : toDecimal(value).dividedBy(toDecimal('100')).toFixed(6);
   const created: { rowNumber: number; id: string | null }[] = [];
 
   for (const [index, row] of result.rows.entries()) {
@@ -519,7 +574,7 @@ export async function applyImport(
           .from('sales_channels')
           .insert({
             org_id: orgId,
-            name: row.name,
+            name: row.channel_name,
             notes: nullable(row.notes ?? ''),
             created_by: userId,
           })
@@ -530,10 +585,13 @@ export async function applyImport(
         const { error: feeError } = await db.from('channel_fee_versions').insert({
           org_id: orgId,
           channel_id: id,
-          commission_rate: row.commission_rate || '0',
-          payment_rate: row.payment_rate || '0',
+          // The file asks for percentages; the column stores a fraction.
+          commission_rate: percentToFraction(row.commission_fee_percent ?? '') ?? '0',
+          payment_rate: percentToFraction(row.payment_fee_percent ?? '') ?? '0',
           fixed_fee_cents: money(row.fixed_fee_per_order ?? ''),
-          effective_from: row.effective_from || new Date().toISOString().slice(0, 10),
+          // No effective-from column on this template: the first fee version
+          // starts today.
+          effective_from: new Date().toISOString().slice(0, 10),
           created_by: userId,
         });
         if (feeError) throw new Error(`Row ${rowNumber}: ${feeError.message}`);
