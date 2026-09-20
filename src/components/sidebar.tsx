@@ -45,6 +45,7 @@ type Built = {
     | '/items'
     | '/purchases'
     | '/production'
+    | '/sales'
     | '/inventory'
     | '/products'
     | '/settings';
@@ -65,7 +66,7 @@ const OPERATE: Nav[] = [
   { label: 'Items', href: '/items', outline: ArchiveBoxIcon, solid: ArchiveBoxSolid },
   { label: 'Purchases', href: '/purchases', outline: ShoppingBagIcon, solid: ShoppingBagSolid },
   { label: 'Production', href: '/production', outline: Cog6ToothIcon, solid: Cog6ToothSolid },
-  { label: 'Sales', stage: 'S9', outline: TagIcon, solid: TagSolid },
+  { label: 'Sales', href: '/sales', outline: TagIcon, solid: TagSolid },
   {
     label: 'Inventory',
     href: '/inventory',

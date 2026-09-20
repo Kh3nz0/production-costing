@@ -165,3 +165,70 @@ export async function listMakeableProducts(
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
+
+export interface SaleListRow {
+  id: string;
+  sale_date: string;
+  reference_no: string | null;
+  payment_status: string;
+  cost_source: string;
+  revenue_cents: string;
+  contribution_profit_cents: string | null;
+  net_revenue_cents: string;
+  channel: { name: string } | null;
+  lines: { quantity: string; item: { name: string } | null }[];
+}
+
+export async function listSales(orgId: string): Promise<SaleListRow[]> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from('sales')
+    .select(
+      'id,sale_date,reference_no,payment_status,cost_source,revenue_cents::text,contribution_profit_cents::text,net_revenue_cents::text,channel:sales_channels!sales_org_id_channel_id_fkey(name),lines:sale_lines(quantity::text,item:items!sale_lines_org_id_item_id_fkey(name))',
+    )
+    .eq('org_id', orgId)
+    .order('sale_date', { ascending: false })
+    .order('id', { ascending: false })
+    .range(0, 499);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as SaleListRow[];
+}
+
+export interface SellableItem {
+  id: string;
+  name: string;
+  qty_on_hand: string;
+  avg_unit_cost: string | null;
+  unit_code: string | null;
+}
+
+export async function listSellableItems(orgId: string): Promise<SellableItem[]> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from('items')
+    .select(
+      'id,name,qty_on_hand::text,avg_unit_cost::text,base_unit:units!items_base_unit_id_fkey(code)',
+    )
+    .eq('org_id', orgId)
+    .in('item_type', ['finished_product', 'subassembly'])
+    .is('archived_at', null)
+    .order('name')
+    .order('id')
+    .range(0, 499);
+  if (error) throw new Error(error.message);
+  return (
+    (data ?? []) as unknown as {
+      id: string;
+      name: string;
+      qty_on_hand: string;
+      avg_unit_cost: string | null;
+      base_unit: { code: string } | null;
+    }[]
+  ).map((row) => ({
+    id: row.id,
+    name: row.name,
+    qty_on_hand: row.qty_on_hand,
+    avg_unit_cost: row.avg_unit_cost,
+    unit_code: row.base_unit?.code ?? null,
+  }));
+}

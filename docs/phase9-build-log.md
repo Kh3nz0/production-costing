@@ -444,3 +444,27 @@ A 13-unit run of the Clickable Keychain, 9 accepted and 4 failed, dated 1 Januar
 The ledger shows four consumption movements and one output movement, and the Items page carries a finished product that had never been stock before: 9 pc at ₱85.59, ₱770.29. Money went out as filament and switches and came back as nine things on a shelf worth a defensible amount.
 
 **Three defects, all found by reading the rendered page.** F-62: the Expected column read `251.16 g` while the Actual input beside it defaulted to `251.160000`, and the estimate printed with no currency. F-63: the machine row read 4.55 h at ₱12.50 with a cost of ₱63.14, because the derived electricity was folded into it — the one row on the page that did not multiply out was the one carrying two things. F-64, the serious one: the run was dated 1 January and consumed filament purchased on 20 September, so the January-dated row stored September's balance and every valuation between those dates was wrong. That is now refused by `0013` (D-128).
+
+---
+
+## S9 — A sale shows what it actually earned
+
+**Done when:** the F-13 example reproduces ₱15.12 and 15.7%; fees stored as amounts survive a channel rate change; uncosted stock blocked, override flags `cost_source='estimate'`; a sale recorded in under 20 seconds on a 390px viewport in a timed run.
+
+**Status: built, awaiting the live walkthrough and the timed run.** 231 tests pass. `0014_sales.sql` is proven against PGlite and not yet applied live.
+
+| Clause                     | Evidence                                                                                                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-13 reproduces            | ₱120.00 revenue, ₱81.48 cost, 32.1% gross — then ₱8.40 of fees and a ₱15.00 shipping subsidy leave **₱15.12 and 15.7%**. Proven twice: in the TypeScript the panel uses, and through the SQL that writes the sale |
+| Fees survive a rate change | The channel's rates are raised to 25% and 10% after the sale; its stored commission, payment fee and contribution are byte-identical                                                                              |
+| Uncosted stock             | Selling stock with no established cost writes the sale with a **null** cost of goods rather than a zero one, so nothing reports it as pure profit                                                                 |
+| The override               | `estimated_unit_cogs` is accepted only when there is nothing to take a cost from, is computed on the server from the product's own recipe and dated rates, and marks the sale `cost_source='estimate'`            |
+| A sale is a past event     | No update grant: its figures cannot be edited by hand. `set_sale_status` is the one door, for paid and fulfilled                                                                                                  |
+
+**The naming rule is enforced in the interface, not just the docs.** `contribution_profit` is never called net profit. The panel carries the sentence saying what it excludes — overhead, taxes, everything paid to keep the business going — because a business that reads contribution as net profit looks solvent on a figure that has not paid the rent.
+
+**One uncosted line makes the whole sale's cost unknown**, rather than summing the costed half and calling it the total. Summing would understate the cost of goods and overstate every profit beneath it (D-119).
+
+**The comparison the spec asks for appears when the two margins diverge by more than ten points**, which is the entire lesson of F-13: a product that looks like 32% returns 15.7% once fees and a subsidy are counted.
+
+**Reused rather than invented:** `payment_status` already existed from 0004, where a purchase is unpaid or paid. A sale means the same thing by those words. Refunds and partial payments are not modelled and are not part of S9's criteria.
