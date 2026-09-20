@@ -468,3 +468,30 @@ The ledger shows four consumption movements and one output movement, and the Ite
 **The comparison the spec asks for appears when the two margins diverge by more than ten points**, which is the entire lesson of F-13: a product that looks like 32% returns 15.7% once fees and a subsidy are counted.
 
 **Reused rather than invented:** `payment_status` already existed from 0004, where a purchase is unpaid or paid. A sale means the same thing by those words. Refunds and partial payments are not modelled and are not part of S9's criteria.
+
+---
+
+## S10 — The dashboard answers questions
+
+**Done when:** every card's figure is reproduced by a report; low stock, below-target margin, overhead recovery and the VAT indicator correct; no card without a report behind it.
+
+**Status: built, awaiting the live walkthrough.** 240 tests pass. No migration: the dashboard reads what the previous stages already write.
+
+**"No card without a report behind it" is kept true by construction.** Every figure is a function in `src/lib/metrics.ts`, and S11's reports will call the same functions. A card and a report cannot disagree when there is one definition. The dashboard computes nothing of its own; it lays out what that module returns.
+
+| Card                       | Definition                                                                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inventory value            | Held items only, and stock with no established cost contributes nothing rather than zero — the count of those is shown beside the total (D-119)                                      |
+| Production cost this month | Completed runs in the month, by run date                                                                                                                                             |
+| Revenue this month         | Sales in the month, by sale date                                                                                                                                                     |
+| Contribution profit        | Null for the whole month if any one sale has an unknown cost, for the same reason one uncosted line makes a sale's cost unknown                                                      |
+| Waste rate                 | **By value**, never by quantity: a quantity ratio across items would add grams to pieces, the same defect that makes allocation by quantity invalid across mixed units (F-16, D-032) |
+| Failure rate               | A plain unit count across products, and labelled as such, because it weights a ₱30 keychain the same as a ₱600 build                                                                 |
+| Overhead recovery          | The month's contribution against the pool in force, with the bar clamped to its track (F-20)                                                                                         |
+| VAT threshold              | Rolling twelve months, inclusive of both ends, against ₱3,000,000, with the screen saying it is a count of recorded sales and not tax advice                                         |
+
+**The period helpers live in `metrics-periods.ts`,** outside the `server-only` module, because a test cannot import `server-only` — the same split as `item-types.ts` (F-36). They are tested directly: February in a leap year and out of one, a month at either boundary, and the rolling year starting the day _after_ a year earlier so no day is counted in two windows.
+
+**D-079's lint caught three more coercions**, in the date arithmetic and in the overhead bar's width. Dates are now parsed by `Date` and the bar is clamped through `Decimal`; none was silenced.
+
+**Not built, and named rather than skipped:** the _Products below target margin_ card. It needs each product's current estimated margin, which means costing every product on every dashboard load — the S6 calculator, once per product, with its rate lookups. That belongs behind the reports layer in S11 rather than in a page load, and the card will be added when the report exists.
