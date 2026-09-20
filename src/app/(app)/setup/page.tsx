@@ -11,7 +11,7 @@ export default async function SetupPage() {
   }
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <p className="text-micro text-text-tertiary">First run</p>
       <h1 className="text-title mt-1 text-text-primary">Set up your business</h1>
       <p className="text-body mt-2 max-w-[68ch] text-text-secondary">

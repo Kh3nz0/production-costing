@@ -376,7 +376,7 @@ export default async function SettingsSection({
       : null;
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <h1 className="text-title text-text-primary">Settings</h1>
       <p className="text-body mt-1 text-text-secondary">
         Changing a rate creates a new version from a date you choose. Older records keep the rate

@@ -74,7 +74,7 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
       : null;
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <Link href="/production" className="text-caption text-accent-text underline">
         Production
       </Link>
@@ -159,7 +159,7 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
           <section className={`${CARD} mt-6`}>
             <h2 className="text-heading-sm text-text-primary">What was used</h2>
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[44rem]">
                 <thead>
                   <tr className="border-b border-border-strong">
                     <th className={TH}>Line</th>

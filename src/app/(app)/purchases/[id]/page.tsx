@@ -43,7 +43,7 @@ export default async function PurchasePage({ params }: { params: Promise<{ id: s
     LANDED_COST_BASES.find((b) => b.value === purchase.landed_cost_base)?.label ?? 'By value';
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <p className="text-caption text-text-tertiary">
         <Link href="/purchases" className="underline">
           Purchases
@@ -76,8 +76,8 @@ export default async function PurchasePage({ params }: { params: Promise<{ id: s
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="overflow-hidden rounded-card border border-border-strong bg-surface">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto rounded-card border border-border-strong bg-surface">
+          <table className="w-full min-w-[40rem] text-left">
             <thead>
               <tr className="bg-surface-sunken">
                 {['Item', 'Quantity', 'Line total', 'Added cost', 'Landed total', 'Unit cost'].map(

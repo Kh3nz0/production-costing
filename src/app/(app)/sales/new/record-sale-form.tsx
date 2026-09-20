@@ -178,7 +178,7 @@ export function RecordSaleForm({
         <section className={CARD}>
           <h2 className="text-heading-sm text-text-primary">What was sold</h2>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[44rem]">
               <thead>
                 <tr className="border-b border-border-strong">
                   <th className={TH}>Product</th>

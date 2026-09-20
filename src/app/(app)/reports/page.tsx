@@ -7,7 +7,7 @@ export const metadata = { title: 'Reports — Production Costing' };
 export default async function ReportsPage() {
   await requireOrg();
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <h1 className="text-title text-text-primary">Reports</h1>
       <p className="text-body mt-1 text-text-secondary">
         Filter by date, read on screen, export to CSV.

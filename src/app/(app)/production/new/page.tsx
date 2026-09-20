@@ -10,7 +10,7 @@ export default async function StartRunPage() {
   const products = await listMakeableProducts(org.id);
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <Link href="/production" className="text-caption text-accent-text underline">
         Production
       </Link>

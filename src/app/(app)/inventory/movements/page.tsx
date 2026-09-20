@@ -24,7 +24,7 @@ export default async function MovementsPage({
   };
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <InventoryHeader />
       <InventoryTabs current="/inventory/movements" />
 
@@ -92,8 +92,8 @@ export default async function MovementsPage({
           </p>
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-card border border-border-strong bg-surface">
-          <table className="w-full text-left">
+        <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
+          <table className="w-full min-w-[40rem] text-left">
             <thead>
               <tr className="bg-surface-sunken">
                 {[

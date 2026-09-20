@@ -110,7 +110,7 @@ export default async function ProductPricingPage({
     cost && cost.displayOverhead !== null ? Money.fromDecimal(cost.displayOverhead) : null;
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <Link href="/products" className="text-caption text-accent-text underline">
         Products
       </Link>
@@ -229,39 +229,41 @@ export default async function ProductPricingPage({
                 {formatPercent(toDecimal(margin ?? '0'))} markup are two different prices on the
                 same cost.
               </p>
-              <table className="mt-4 w-full">
-                <thead>
-                  <tr className="border-b border-border-strong">
-                    <th className={TH}>Target</th>
-                    <th className={`${TH} text-right`}>Price</th>
-                    <th className={`${TH} text-right`}>Profit</th>
-                    <th className={`${TH} text-right`}>Margin</th>
-                    <th className={`${TH} text-right`}>Markup</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(
-                    [
-                      ['Margin', trap.asMargin.value],
-                      ['Markup', trap.asMarkup.value],
-                    ] as const
-                  ).map(([label, row]) => (
-                    <tr key={label} className="border-b border-border-subtle">
-                      <td className={TD}>{label}</td>
-                      <td className={`${TD} text-right tabular-nums font-medium`}>
-                        {row.price.format()}
-                      </td>
-                      <td className={`${TD} text-right tabular-nums`}>{row.profit.format()}</td>
-                      <td className={`${TD} text-right tabular-nums`}>
-                        {formatPercent(row.margin)}
-                      </td>
-                      <td className={`${TD} text-right tabular-nums`}>
-                        {formatPercent(row.markup)}
-                      </td>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full min-w-[34rem]">
+                  <thead>
+                    <tr className="border-b border-border-strong">
+                      <th className={TH}>Target</th>
+                      <th className={`${TH} text-right`}>Price</th>
+                      <th className={`${TH} text-right`}>Profit</th>
+                      <th className={`${TH} text-right`}>Margin</th>
+                      <th className={`${TH} text-right`}>Markup</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {(
+                      [
+                        ['Margin', trap.asMargin.value],
+                        ['Markup', trap.asMarkup.value],
+                      ] as const
+                    ).map(([label, row]) => (
+                      <tr key={label} className="border-b border-border-subtle">
+                        <td className={TD}>{label}</td>
+                        <td className={`${TD} text-right tabular-nums font-medium`}>
+                          {row.price.format()}
+                        </td>
+                        <td className={`${TD} text-right tabular-nums`}>{row.profit.format()}</td>
+                        <td className={`${TD} text-right tabular-nums`}>
+                          {formatPercent(row.margin)}
+                        </td>
+                        <td className={`${TD} text-right tabular-nums`}>
+                          {formatPercent(row.markup)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <p className="text-body-sm mt-3 text-text-secondary">
                 {trap.asMargin.value.price.minus(trap.asMarkup.value.price).format()} apart. Margin
                 is profit as a share of the price you charge; markup is profit as a share of what it

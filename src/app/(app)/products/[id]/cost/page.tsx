@@ -37,7 +37,7 @@ export default async function ProductCostPage({
       ? output.div(new Decimal(1).minus(cost.failureRate)).ceil()
       : null;
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <Link href="/products" className="text-caption text-accent-text underline">
         Products
       </Link>

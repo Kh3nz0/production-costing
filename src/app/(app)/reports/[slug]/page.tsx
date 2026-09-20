@@ -63,7 +63,7 @@ export default async function ReportPage({
   })();
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <Link href="/reports" className="text-caption text-accent-text underline">
         Reports
       </Link>
@@ -114,7 +114,7 @@ export default async function ReportPage({
         </p>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
-          <table className="w-full">
+          <table className="w-full min-w-[44rem]">
             <thead>
               <tr className="border-b border-border-strong">
                 {result.columns.map((column, index) => (

@@ -153,9 +153,12 @@ export function Sidebar({ email }: { email: string }) {
   return (
     <nav
       aria-label="Main"
-      className="flex w-sidebar shrink-0 flex-col border-r border-border-strong bg-surface px-3 py-4"
+      // Hidden below lg, where a 240px rail would take more than half of a
+      // 390px screen; the tab bar takes over there (F-69). It scrolls on its
+      // own so a long list of destinations cannot push the footer off-screen.
+      className="hidden w-sidebar shrink-0 flex-col overflow-y-auto border-r border-border-strong bg-surface px-3 py-4 lg:flex"
     >
-      <span className="text-heading px-3 pb-2 text-brand-bloop">Bloop</span>
+      <span className="text-heading px-3 pb-2 text-brand-bloop">Costed</span>
 
       <Group label="Operate" items={OPERATE} current={current} />
       <Group label="Understand" items={UNDERSTAND} current={current} />

@@ -46,7 +46,7 @@ export default async function ItemsPage({
   };
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-title text-text-primary">Items</h1>
@@ -137,8 +137,8 @@ export default async function ItemsPage({
           </p>
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-card border border-border-strong bg-surface">
-          <table className="w-full text-left">
+        <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
+          <table className="w-full min-w-[40rem] text-left">
             <thead>
               <tr className="bg-surface-sunken">
                 {['Item', 'Type', 'On hand', 'Unit cost', 'Value', 'Status'].map((h) => (

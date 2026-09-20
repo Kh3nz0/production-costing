@@ -69,7 +69,7 @@ export default async function DashboardPage() {
   }).format(new Date(`${today}T00:00:00Z`));
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <h1 className="text-title text-text-primary">{org.name}</h1>
       <p className="text-body mt-1 text-text-secondary">{monthName} at a glance</p>
 

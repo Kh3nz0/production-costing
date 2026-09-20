@@ -95,7 +95,7 @@ export function RecordRunForm({
           labour time are totals for the whole batch, not per unit.
         </p>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[44rem]">
             <thead>
               <tr className="border-b border-border-strong">
                 <th className={TH}>Line</th>

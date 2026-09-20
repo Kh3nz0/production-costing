@@ -11,7 +11,7 @@ export default async function NewPurchasePage() {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <main className="mx-auto max-w-content-max px-6 py-9">
+    <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <p className="text-caption text-text-tertiary">
         <Link href="/purchases" className="underline">
           Purchases
