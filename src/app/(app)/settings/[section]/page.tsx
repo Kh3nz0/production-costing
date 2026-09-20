@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Select } from '@/components/ui/select';
 import { requireOrg } from '@/lib/org';
 import { createClient } from '@/lib/supabase/server';
 import { formatPercent, formatQuantity, formatRate, groupDigits, toDecimal } from '@/lib/decimal';
@@ -84,21 +85,14 @@ function form(kind: string, title: string, fields: React.ReactNode) {
 
 function picker(name: string, label: string, rows: Row[]) {
   return (
-    <label className="text-body-sm flex flex-col gap-1 text-text-primary">
-      {label}
-      <select
-        name={name}
-        required
-        className="h-field rounded-control border border-border-strong bg-surface px-3"
-      >
-        <option value="">Choose</option>
-        {rows.map((row) => (
-          <option key={String(row.id)} value={String(row.id)}>
-            {String(row.name ?? row.code)}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Select label={label} name={name} required>
+      <option value="">Choose</option>
+      {rows.map((row) => (
+        <option key={String(row.id)} value={String(row.id)}>
+          {String(row.name ?? row.code)}
+        </option>
+      ))}
+    </Select>
   );
 }
 

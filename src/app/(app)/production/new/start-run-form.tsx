@@ -5,10 +5,8 @@ import { useActionState, useState } from 'react';
 import { startRun } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { Select } from '@/components/ui/select';
 import { formatPercent, toDecimal } from '@/lib/decimal';
-
-const CONTROL =
-  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 export function StartRunForm({
   products,
@@ -43,22 +41,20 @@ export function StartRunForm({
 
   return (
     <form action={action} className="mt-6 flex max-w-form-lg flex-col gap-4">
-      <label className="text-caption text-text-secondary">
-        Product
-        <select
-          name="item_id"
-          value={itemId}
-          onChange={(e) => setItemId(e.target.value)}
-          className={CONTROL}
-          required
-        >
-          {products.map((product) => (
-            <option key={product.id} value={product.id}>
-              {product.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Select
+        label="Product"
+        name="item_id"
+        value={itemId}
+        onChange={(e) => setItemId(e.target.value)}
+
+        required
+      >
+        {products.map((product) => (
+          <option key={product.id} value={product.id}>
+            {product.name}
+          </option>
+        ))}
+      </Select>
 
       <Field
         label="How many good units do you want"

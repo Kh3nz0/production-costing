@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { savePricingSnapshot, saveTargetMargin } from '../../actions';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import type { ChannelWithFees } from '@/lib/products';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
@@ -74,17 +75,14 @@ export function PricingForm({
         <input type="hidden" name="on" value={on} />
         <input type="hidden" name="target_margin_percent" value={marginPercent} />
         <input type="hidden" name="discount_percent" value={discountPercent} />
-        <label className="text-caption mt-4 block text-text-secondary">
-          Channel
-          <select name="channel_id" className={CONTROL} defaultValue="">
-            <option value="">Direct</option>
-            {channels.map((channel) => (
-              <option key={channel.id} value={channel.id}>
-                {channel.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select label="Channel" name="channel_id" defaultValue="">
+          <option value="">Direct</option>
+          {channels.map((channel) => (
+            <option key={channel.id} value={channel.id}>
+              {channel.name}
+            </option>
+          ))}
+        </Select>
         <label className="text-caption mt-4 block text-text-secondary">
           Note
           <input name="notes" className={CONTROL} />

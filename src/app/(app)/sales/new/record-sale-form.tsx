@@ -374,20 +374,14 @@ export function RecordSaleForm({
               onChange={(e) => setShippingPaid(e.target.value)}
               helper="If you charged less than you paid, the difference comes out of your profit."
             />
-            <label className="text-caption text-text-secondary">
-              Payment status
-              <select name="payment_status" className={CONTROL} defaultValue="paid">
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-              </select>
-            </label>
-            <label className="text-caption text-text-secondary">
-              Fulfilment status
-              <select name="fulfilment_status" className={CONTROL} defaultValue="fulfilled">
-                <option value="fulfilled">Fulfilled</option>
-                <option value="unfulfilled">Unfulfilled</option>
-              </select>
-            </label>
+            <Select label="Payment status" name="payment_status" defaultValue="paid">
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+            </Select>
+            <Select label="Fulfilment status" name="fulfilment_status" defaultValue="fulfilled">
+              <option value="fulfilled">Fulfilled</option>
+              <option value="unfulfilled">Unfulfilled</option>
+            </Select>
           </div>
           <div className="mt-4">
             <Field label="Notes" name="notes" />

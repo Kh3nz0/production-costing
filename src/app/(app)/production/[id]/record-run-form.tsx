@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { completeRun } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { Select } from '@/components/ui/select';
 import { formatCalculationAmount, formatQuantity, toDecimal } from '@/lib/decimal';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
@@ -187,25 +188,22 @@ export function RecordRunForm({
         </p>
         {waste.map((line, index) => (
           <div key={line.key} className="mt-4 grid gap-3 sm:grid-cols-[2fr_1fr_2fr_auto]">
-            <label className="text-caption text-text-secondary">
-              Item
-              <select
-                value={line.item_id}
-                onChange={(e) =>
-                  setWaste((all) =>
-                    all.map((w) => (w.key === line.key ? { ...w, item_id: e.target.value } : w)),
-                  )
-                }
-                className={CONTROL}
-              >
-                <option value="">Choose</option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Item"
+              value={line.item_id}
+              onChange={(e) =>
+                setWaste((all) =>
+                  all.map((w) => (w.key === line.key ? { ...w, item_id: e.target.value } : w)),
+                )
+              }
+            >
+              <option value="">Choose</option>
+              {items.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
             <label className="text-caption text-text-secondary">
               Quantity
               <input

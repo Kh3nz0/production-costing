@@ -5,10 +5,9 @@ import { useActionState } from 'react';
 import { saveSetting } from '../../settings/actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { Select } from '@/components/ui/select';
 
 const CARD = 'rounded-card border border-border-strong bg-surface p-6';
-const CONTROL =
-  'h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary';
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -96,16 +95,13 @@ export function OnboardingStep({
                 min="0"
                 helper="Use your total bill divided by total kWh used, not just the generation charge. Distribution, transmission, system loss and taxes all apply to the power a print consumes."
               />
-              <label className="text-caption text-text-secondary">
-                Unit
-                <select name="unit_id" className={CONTROL}>
-                  {energyUnits.map((unit) => (
-                    <option key={unit.id} value={unit.id}>
-                      {unit.code}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select label="Unit" name="unit_id">
+                {energyUnits.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.code}
+                  </option>
+                ))}
+              </Select>
               <Field
                 label="Effective from"
                 name="effective_from"

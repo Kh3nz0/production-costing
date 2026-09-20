@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveRecipe } from '../../actions';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import type { RecipeLine, RecipeOptions } from '@/lib/products';
 import { toDecimal } from '@/lib/decimal';
 
@@ -122,28 +123,25 @@ export function RecipeForm({
               </button>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="text-caption text-text-secondary">
-                What kind of line?
-                <select
-                  className={CONTROL}
-                  value={line.line_type}
-                  onChange={(e) =>
-                    change(line.key, {
-                      line_type: e.target.value as DraftLine['line_type'],
-                      ref_id: '',
-                      unit_id: '',
-                      qty: '',
-                      amount: '',
-                    })
-                  }
-                >
-                  {Object.entries(LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select
+                label="What kind of line?"
+                value={line.line_type}
+                onChange={(e) =>
+                  change(line.key, {
+                    line_type: e.target.value as DraftLine['line_type'],
+                    ref_id: '',
+                    unit_id: '',
+                    qty: '',
+                    amount: '',
+                  })
+                }
+              >
+                {Object.entries(LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
               {line.line_type !== 'other_cost' && (
                 <label className="text-caption text-text-secondary">
                   {line.line_type === 'machine_time'
@@ -201,22 +199,19 @@ export function RecipeForm({
               )}
               {isItem && (
                 <>
-                  <label className="text-caption text-text-secondary">
-                    Unit
-                    <select
-                      className={CONTROL}
-                      value={line.unit_id}
-                      required
-                      onChange={(e) => change(line.key, { unit_id: e.target.value })}
-                    >
-                      <option value="">Choose</option>
-                      {options.units.map((unit) => (
-                        <option key={unit.id} value={unit.id}>
-                          {unit.name} ({unit.code})
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <Select
+                    label="Unit"
+                    value={line.unit_id}
+                    required
+                    onChange={(e) => change(line.key, { unit_id: e.target.value })}
+                  >
+                    <option value="">Choose</option>
+                    {options.units.map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        {unit.name} ({unit.code})
+                      </option>
+                    ))}
+                  </Select>
                   <label className="text-caption text-text-secondary">
                     Waste (%)
                     <input
