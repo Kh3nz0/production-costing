@@ -1,4 +1,6 @@
-# Production cost, inventory and profit
+# Costed
+
+_Production cost, inventory and profit._
 
 What it actually costs to make what you sell. Private business app, first use case Bloop (3D printing), architecture industry-neutral.
 
@@ -15,22 +17,21 @@ pnpm dev
 
 ### Two things about the toolchain
 
-**pnpm is not installed on this machine.** Everything below was run through `npx --yes pnpm@9.15.9 <script>`, which works but is slow. To get the bare `pnpm` command, run once (it needs your password, which is why it was not run for you):
+**pnpm is not installed on this machine.** Everything below runs through `npx --yes pnpm@9.15.9 <script>`, which works but is slow. To get the bare `pnpm` command, run once (it needs your password, which is why it was not run for you):
 
 ```bash
 sudo corepack enable pnpm
 ```
 
-**Node is 20.11.1, and that is the constraint that shaped the pins.** Two current tools need a newer Node than that:
+**Node is pinned to 20.20.2 by `.nvmrc`**, installed through the `nvm` that was already on this machine — in your home directory, with nothing touched in `/usr/local` and no password needed. Start any session with:
 
-| Tool                  | Needs        | Why                                                   |
-| --------------------- | ------------ | ----------------------------------------------------- |
-| vitest 4+             | Node ≥ 20.12 | its rolldown dependency imports `node:util.styleText` |
-| vite 7 config loading | Node ≥ 20.19 | `require()` of an ES module                           |
+```bash
+nvm use
+```
 
-So vitest is pinned to **3.2.7**, and `vitest.config.mts` deliberately exports a plain object instead of calling `defineConfig`. That import is the CJS entry point, and requiring vite's ESM build is what fails; a plain object is the same config without the risk. Both problems disappear on **Node 20.19.x**, which is a patch-level move inside the same LTS line. Worth doing before S14, when Playwright joins; not worth doing mid-stage.
+It was 20.11.1 until 21 September 2026, and that constraint shaped two pins that can now be revisited: **vitest is held at 3.2.7** because vitest 4 needs `node:util.styleText` from 20.12, and **`vitest.config.mts` exports a plain object** rather than calling `defineConfig`, because that import is the CJS entry and requiring vite's ESM build needs 20.19. Both are now safe to move; neither has been moved, because a working test suite is not worth risking for tidiness on the same afternoon the runtime changed.
 
-Telemetry is on by default in Next. To turn it off: `pnpm next telemetry disable`.
+The upgrade also freed the standard **Turbopack build**: `pnpm build` works. It had been failing on an internal port binding since S0, and every build in this project until now used `next build --webpack`.
 
 ## The database
 
