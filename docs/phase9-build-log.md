@@ -673,6 +673,8 @@ The CI workflow also moves to Node 20.20.2, and the Postgres client is installed
 
 `0016` promised that a repeated category takes the later amount, but it appended both lines and `add_overhead_version` rejected the duplicate id. A new integration test reproduced the failure. `0017_deduplicate_overhead_import.sql` keeps the last amount for each category id before creating the version; the test now passes. This is a new migration because `0016` may already have been applied.
 
+**`0017` applied to the hosted project, 21 September 2026.** The SQL editor completed successfully with no rows returned, which is the expected result for replacing a function and applying grants.
+
 ### Release audit after S14
 
 The webpack production build passes, and the full database and costing suite passes with 299 tests. The restore rehearsal was rerun against PostgreSQL 18 with `0017` included and again returned identical authenticated valuations.

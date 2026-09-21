@@ -35,7 +35,7 @@ The upgrade also freed the standard **Turbopack build**: `pnpm build` works. It 
 
 ## The database
 
-`supabase/migrations/` holds the schema. The app reads the project URL and publishable anon key from `.env.local` (see `.env.example`). Apply new migrations to the hosted project before using the features they add. In particular, `0017_deduplicate_overhead_import.sql` corrects repeated categories in one overhead file and must be applied after `0016`.
+`supabase/migrations/` holds the schema. The app reads the project URL and publishable anon key from `.env.local` (see `.env.example`). Apply new migrations to the hosted project before using the features they add. The hosted project is current through `0017_deduplicate_overhead_import.sql` as of 21 September 2026.
 
 The RLS tests do not need any of that. `src/test/pg.ts` runs the migrations against **PGlite**, which is PostgreSQL compiled to WebAssembly, so the policies are executed by a real Postgres with no Docker and no network. What it does not cover is stated in that file: Supabase's Auth service and PostgREST are not present, so the tests prove the database refuses the rows, not that the HTTP layer in front of it does.
 
