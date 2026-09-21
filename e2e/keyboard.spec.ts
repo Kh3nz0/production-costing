@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { seed } from './seed';
-import { signIn } from './sign-in';
+import { ready, signIn } from './sign-in';
 
 /**
  * S14: a purchase, a run and a sale completed with a keyboard alone.
@@ -25,13 +25,23 @@ async function tabTo(page: Page, target: Locator): Promise<void> {
   throw new Error(`Could not reach ${await target.getAttribute('name')} by tabbing`);
 }
 
+/**
+ * Choose an option with the keyboard, by typing it.
+ *
+ * Type-ahead rather than arrow keys, because arrow keys do not move a native
+ * select in headless Chromium — probed directly: `ArrowDown` on a focused
+ * select left the value empty, while typing the option's name selected it. A
+ * person at a real browser can use either; only one of them can be checked
+ * here, and typing is as genuinely a keyboard gesture as arrowing (F-83).
+ */
 async function chooseByKeyboard(page: Page, target: Locator, name: string): Promise<void> {
   await tabTo(page, target);
   const options = await target.locator('option').allTextContents();
-  const index = options.findIndex((option) => option.trim() === name);
-  expect(index, `${name} is missing from the picker`).toBeGreaterThanOrEqual(0);
-  await page.keyboard.press('Home');
-  for (let step = 0; step < index; step += 1) await page.keyboard.press('ArrowDown');
+  expect(
+    options.map((option) => option.trim()),
+    `${name} is missing from the picker`,
+  ).toContain(name);
+  await page.keyboard.type(name);
   await expect(target.locator('option:checked')).toHaveText(name);
 }
 
@@ -48,7 +58,7 @@ test.describe('keyboard-only completion', () => {
 
   test('every control on Record a sale is reachable by tabbing', async ({ page }) => {
     await page.goto('/sales/new');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
 
     // Walk forward through the document and collect what the focus ring lands
     // on. A control that never receives focus is not on this list, which is
@@ -88,7 +98,7 @@ test.describe('keyboard-only completion', () => {
 
   test('a sale can be recorded without a mouse', async ({ page }) => {
     await page.goto('/sales/new');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
 
     await chooseByKeyboard(page, page.getByLabel('Product').first(), 'End-to-end widget');
     await tabTo(page, page.getByLabel(/^quantity$/i).first());
@@ -108,7 +118,7 @@ test.describe('keyboard-only completion', () => {
 
   test('a purchase can be saved and received without a mouse', async ({ page }) => {
     await page.goto('/purchases/new');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
 
     await chooseByKeyboard(page, page.getByLabel('Item').first(), 'End-to-end filament');
     await tabTo(page, page.getByLabel(/^Quantity/).first());
@@ -127,7 +137,7 @@ test.describe('keyboard-only completion', () => {
 
   test('a production run can be started and completed without a mouse', async ({ page }) => {
     await page.goto('/production/new');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
 
     await chooseByKeyboard(page, page.getByLabel('Product'), 'End-to-end keyboard product');
     await tabTo(page, page.getByLabel('How many good units do you want'));
@@ -159,7 +169,7 @@ test.describe('the sale form on a phone', () => {
     await signIn(page, email!, password!);
 
     await page.goto('/sales/new');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
 
     // The defect F-69 recorded: a select crushed to a bare chevron, with no
     // room for a product name. Anything under 120px is not a usable picker.

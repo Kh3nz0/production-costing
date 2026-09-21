@@ -47,10 +47,17 @@ const config: PlaywrightTestConfig = {
   ...(process.env.E2E_BASE_URL === undefined
     ? {
         webServer: {
-          command: `npx --yes pnpm@9.15.9 next dev -p ${PORT}`,
+          // A production build, not `next dev`.
+          //
+          // The dev server compiles a route on first request and keeps an HMR
+          // websocket open, which made this suite both slow and intermittent:
+          // one route sat for seventeen minutes, and audits failed and passed
+          // on alternate runs with no change in between (F-82). It is also
+          // what ships, so it is what should be audited.
+          command: `npx --yes pnpm@9.15.9 next build && npx --yes pnpm@9.15.9 next start -p ${PORT}`,
           url: baseURL,
           reuseExistingServer: true,
-          timeout: 120_000,
+          timeout: 300_000,
         },
       }
     : {}),

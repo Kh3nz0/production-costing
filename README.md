@@ -54,3 +54,17 @@ Three rules are enforced rather than documented:
 ## Design tokens
 
 [`src/app/globals.css`](src/app/globals.css) is generated from the Figma file's `Tokens` collection. Figma variable → Tailwind key → CSS property is mapped in `docs/phase8-handoff.md` section 3. Do not invent a value there that does not exist in Figma.
+
+## The browser checks
+
+`pnpm e2e` runs Playwright: every route audited against WCAG 2.0 and 2.1 A and AA, a purchase, a run and a sale completed with the keyboard alone, the sale form measured at 390px, and two simultaneous receipts of one purchase.
+
+It builds and starts the app itself. Point it at something already running with `E2E_BASE_URL`, but prefer not to point it at `next dev`: the dev server compiles on first request and holds an HMR socket open, which makes the audit slow and intermittent (F-82).
+
+The signed-in checks need an account, supplied by the environment and never committed:
+
+```bash
+E2E_EMAIL=... E2E_PASSWORD=... pnpm e2e
+```
+
+Without them those specs skip and say so. There is no public sign-up route — that is S1's criterion — so a test account is created in the Supabase dashboard under Authentication, with **Auto Confirm User** ticked.

@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { signIn } from './sign-in';
+import { ready, signIn } from './sign-in';
 
 /**
  * S14: zero axe violations per route.
@@ -58,7 +58,7 @@ test.describe('public routes', () => {
   for (const route of PUBLIC_ROUTES) {
     test(`${route} has no axe violations`, async ({ page }) => {
       await page.goto(route);
-      await page.waitForLoadState('networkidle');
+      await ready(page);
       await audit(page, route);
     });
   }
@@ -77,7 +77,7 @@ test.describe('signed-in routes', () => {
   for (const route of SIGNED_IN_ROUTES) {
     test(`${route} has no axe violations`, async ({ page }) => {
       await page.goto(route);
-      await page.waitForLoadState('networkidle');
+      await ready(page);
       await audit(page, route);
     });
   }

@@ -23,3 +23,15 @@ export async function signIn(page: Page, email: string, password: string): Promi
     await page.waitForURL(/\/(dashboard|onboarding)/);
   }
 }
+
+/**
+ * Wait for a page to have rendered.
+ *
+ * Not `networkidle`: a dev server's HMR websocket never lets the network go
+ * idle, so that wait resolves on a timeout at random. One route sat for
+ * seventeen minutes and then reported a violation that was really a hang
+ * (F-82). The main landmark is the deterministic signal that the page is there.
+ */
+export async function ready(page: Page): Promise<void> {
+  await page.locator('main').first().waitFor({ state: 'visible' });
+}
