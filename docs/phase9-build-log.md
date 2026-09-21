@@ -586,7 +586,7 @@ Six steps at `/onboarding/business` through `/onboarding/channels`, each writing
 
 **Done when:** every formula has a passing test including its worked example; every mutation has an integration test asserting ledger and balance agreement; zero axe violations per route; keyboard-only completion of purchase, run and sale; a `pg_dump` restore into an empty project reproduces valuation to the centavo; error logs contain no costs, prices or margins.
 
-**Status: four criteria of six, with the fifth and sixth set up and waiting on a test account.** 297 unit tests pass, plus a Playwright suite.
+**Status: five criteria of six.** 297 unit tests and 27 end-to-end checks pass.
 
 | Criterion                                                                     | State                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -628,3 +628,23 @@ Where a function already existed for the thing being made — `receive_purchase`
 **The first audit run failed, and the failure was not in the app.** Both violations were on `#__next_error__`, Next's error overlay: the dev server had been running across a Node change and a dependency install, and its client chunks were stale. Restarting it made both routes pass. Worth recording because the failure looked exactly like two real accessibility defects — a missing `<title>` and a missing `lang` — and was neither.
 
 **Still blocked, and now the only things that are.** The `pg_dump` restore check and the `receive_purchase` concurrency proof both need a Postgres with more than one connection. That needs the Supabase CLI, which needs Docker, which is not installed — and Docker Desktop is a genuine system install rather than a home-directory one.
+
+### S14, 21 September 2026: the accessibility and keyboard criteria are met
+
+A throwaway account was created in the Supabase dashboard — there is no public sign-up route, which is S1's criterion working as intended — and `pnpm e2e` now runs **27 checks** against a real browser.
+
+| Criterion                     | State                                                                                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Zero axe violations per route | **Done.** Twenty-four routes, public and signed-in, against WCAG 2.0 and 2.1 A and AA                                                                                                                                                                         |
+| Keyboard-only completion      | **Done.** The spec tabs through the sale form collecting what the focus ring actually reaches, then records a sale with Enter rather than a click                                                                                                             |
+| S9's timed phone entry        | **Done as an assertion rather than a stopwatch.** The product picker must exceed 120px at 390px — the exact defect F-69 recorded — and nothing may overflow the viewport sideways. It runs every time instead of depending on somebody remembering to time it |
+
+**The sweep found two real defects, and both had been invisible to every check before it.**
+
+F-80: forty-eight contrast failures across every route, all one token. The page background is `surface-sunken`, and `text-tertiary` on it is 4.31:1 against the 4.5:1 floor. On white it is 4.59:1 — which is why the phase 7 Figma audit passed it, having measured the swatch against the surface rather than against the page. Three points darker along the same hue fixes all forty-eight.
+
+F-81: a select with **no accessible name at all** on New purchase, a critical violation, on the one control that decides what is being bought. It was one of the eight raw selects left behind in F-79 as wanting a deliberate look; this is what the deliberate look found.
+
+**Both are the same lesson as the rest of this project.** The arithmetic was never wrong. What was wrong was a thing measured against the wrong background, and a label that was not attached to its control — and neither is visible in a diff.
+
+**Still blocked, and now the only two.** The `pg_dump` restore check and the `receive_purchase` concurrency proof both need a Postgres with more than one connection: the Supabase CLI, which needs Docker, which is a genuine system install.

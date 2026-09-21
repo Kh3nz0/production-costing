@@ -5,6 +5,7 @@ import { useActionState, useState } from 'react';
 import { createPurchase, type ActionState } from '../../actions';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { Select } from '@/components/ui/select';
 import {
   LANDED_COST_BASES,
   previewAllocation,
@@ -124,22 +125,22 @@ export function PurchaseForm({
                   key={row.key}
                   className="grid gap-3 rounded-control bg-surface-sunken p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
                 >
-                  <div className="flex w-full flex-col gap-1">
-                    <label className="text-caption text-text-secondary">Item</label>
-                    <select
-                      name="line_item_id"
-                      value={row.itemId}
-                      onChange={(e) => update(row.key, { itemId: e.target.value })}
-                      className="h-field w-full rounded-control border border-border-strong bg-surface px-3 text-body text-text-primary"
-                    >
-                      <option value="">Choose an item</option>
-                      {items.map((i) => (
-                        <option key={i.id} value={i.id}>
-                          {i.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Was a detached <label> with no htmlFor, so the control had
+                      no accessible name at all — a critical axe violation, and
+                      the reason the Select component exists (F-81). */}
+                  <Select
+                    label="Item"
+                    name="line_item_id"
+                    value={row.itemId}
+                    onChange={(e) => update(row.key, { itemId: e.target.value })}
+                  >
+                    <option value="">Choose an item</option>
+                    {items.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.name}
+                      </option>
+                    ))}
+                  </Select>
 
                   <Field
                     label={`Quantity${item?.purchase_unit !== null && item?.purchase_unit !== undefined ? ` (${item.purchase_unit.code})` : ''}`}

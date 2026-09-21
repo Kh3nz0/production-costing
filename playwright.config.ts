@@ -1,4 +1,15 @@
+import { readFileSync } from 'node:fs';
 import type { PlaywrightTestConfig } from '@playwright/test';
+
+// The seed talks to Supabase directly, so it needs the same `.env.local` the
+// app reads. Next loads that for the app; nothing loads it for a test runner,
+// and adding a dependency to read four lines is not worth it.
+for (const line of readFileSync('.env.local', 'utf8').split('\n')) {
+  const match = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
+  if (match !== null && process.env[match[1]!] === undefined) {
+    process.env[match[1]!] = match[2]!;
+  }
+}
 
 /**
  * The end-to-end checks S14 asks for: zero axe violations per route, and

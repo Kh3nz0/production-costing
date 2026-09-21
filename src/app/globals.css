@@ -25,7 +25,14 @@
   /* Text */
   --color-text-primary: #0b1020;
   --color-text-secondary: #4f5a70;
-  --color-text-tertiary: #6b7689;
+  /* #6B7689 until 21 September 2026, when an axe sweep of every route found
+     48 contrast failures with one cause: the page background is
+     `surface-sunken`, and tertiary text on it measured 4.31:1 against the
+     4.5:1 floor for normal text. On white it was 4.59:1, which is why it had
+     passed every check made against a card. Darkened three points along the
+     same hue — the smallest change that clears it — to 4.50:1 on sunken and
+     4.79:1 on white (F-80). */
+  --color-text-tertiary: #687386;
   --color-text-inverse: #ffffff;
 
   /* Lines. border-strong is the only visible decorative border (D-091).

@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { seed } from './seed';
+import { signIn } from './sign-in';
 
 /**
  * S14: a purchase, a run and a sale completed with a keyboard alone.
@@ -22,14 +24,8 @@ test.describe('keyboard-only completion', () => {
   );
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/sign-in');
-    // Signing in is itself part of the criterion: keyboard only, from the top.
-    await page.keyboard.press('Tab');
-    await page.getByLabel(/email/i).fill(email!);
-    await page.keyboard.press('Tab');
-    await page.getByLabel(/password/i).fill(password!);
-    await page.keyboard.press('Enter');
-    await page.waitForURL(/\/(dashboard|setup)/);
+    await seed(email!, password!);
+    await signIn(page, email!, password!);
   });
 
   test('every control on Record a sale is reachable by tabbing', async ({ page }) => {
@@ -101,11 +97,8 @@ test.describe('the sale form on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test('S9: the fields are usable at 390px', async ({ page }) => {
-    await page.goto('/sign-in');
-    await page.getByLabel(/email/i).fill(email!);
-    await page.getByLabel(/password/i).fill(password!);
-    await page.getByRole('button', { name: /sign in/i }).click();
-    await page.waitForURL(/\/(dashboard|setup)/);
+    await seed(email!, password!);
+    await signIn(page, email!, password!);
 
     await page.goto('/sales/new');
     await page.waitForLoadState('networkidle');

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { signIn } from './sign-in';
 
 /**
  * S14: zero axe violations per route.
@@ -70,11 +71,7 @@ test.describe('signed-in routes', () => {
   );
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/sign-in');
-    await page.getByLabel(/email/i).fill(email!);
-    await page.getByLabel(/password/i).fill(password!);
-    await page.getByRole('button', { name: /sign in/i }).click();
-    await page.waitForURL(/\/(dashboard|setup)/);
+    await signIn(page, email!, password!);
   });
 
   for (const route of SIGNED_IN_ROUTES) {
