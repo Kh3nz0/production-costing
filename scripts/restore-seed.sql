@@ -4,14 +4,14 @@
 --
 -- Figures are F-01's: 2 spools at ₱1,150.00 and 1 pack at ₱720.00 with ₱180.00
 -- of shipping allocated by value, which lands at ₱1.218545/g and ₱8.476778/pc.
-set local role postgres;
+set role postgres;
 
 insert into auth.users (id, email)
 values ('11111111-1111-1111-1111-111111111111', 'rehearsal@costed.test')
 on conflict do nothing;
 
 select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111"}', false);
-set local role authenticated;
+set role authenticated;
 
 select public.create_organization('Restore rehearsal');
 

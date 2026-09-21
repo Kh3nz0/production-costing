@@ -56,12 +56,12 @@ export default async function ItemsPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span
-            className="text-body inline-flex h-control-md cursor-default items-center rounded-control bg-surface-sunken px-4 text-text-tertiary"
-            title="Bulk import arrives at stage S12"
+          <Link
+            href="/settings/import"
+            className="text-body inline-flex h-control-md items-center rounded-control bg-surface-sunken px-4 text-text-primary transition-colors duration-fast hover:bg-border-strong"
           >
             Import items
-          </span>
+          </Link>
           <ButtonLink href="/items/new">New item</ButtonLink>
         </div>
       </div>

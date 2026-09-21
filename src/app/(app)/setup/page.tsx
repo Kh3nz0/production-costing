@@ -20,8 +20,8 @@ export default async function SetupPage() {
       </p>
       <SetupForm />
       <p className="text-caption mt-6 max-w-[68ch] text-text-tertiary">
-        Equipment, labour, overhead and sales channels are configured in the full onboarding flow,
-        which arrives at stage S13. None of them is needed to start adding items.
+        After creating your business, guided onboarding can help you set up equipment, labour,
+        overhead and sales channels. You can start adding items first.
       </p>
     </main>
   );

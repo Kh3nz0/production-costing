@@ -662,3 +662,19 @@ The figures are F-01's on purpose: ₱1.218545 per gram and ₱8.476778 per piec
 **What is proven and what is not.** The SQL the rehearsal runs is proven here, against the PGlite harness, in `restore-scripts.test.ts` — a CI job that fails on a typo in its seed teaches nothing about backups and costs a push to find out. The dump-and-restore round trip itself is **unproven until CI runs it**, because this machine has no `pg_dump`. That is a claim awaiting its first green run, and it is recorded as one rather than counted as done.
 
 The CI workflow also moves to Node 20.20.2, and the Postgres client is installed at 17 and called by absolute path: the runner ships a v16 client, `pg_dump` refuses a server newer than itself, and PATH keeps finding the old binary even with the new one installed.
+
+**Preflight correction before the first CI run.** The source database needs the Supabase shim before migrations, but the dump already contains that shim. The initial restore script ran it again in the empty destination, which would make `psql` stop on duplicate schema objects. The destination now loads only the dump, and `pg_dump --clean --if-exists` handles its default `public` schema.
+
+**Second preflight correction.** The rehearsal originally used `set local role` outside a transaction; PostgreSQL ignores that setting there, so the valuation was being read as the database superuser. It now uses `set role authenticated`, and the dump retains grants. A restored valuation must therefore work through the same table permissions, function execute grant, and RLS policies as the app user.
+
+**The restore round trip passed locally, 21 September 2026.** A cached PostgreSQL 18 server package was extracted into `/private/tmp`, and the rehearsal ran against it with `pg_dump` 18. The machine has no `psql`, so a temporary libpq SQL runner executed the scripts; the dump uses `--inserts` so this runner can process the data without psql's `COPY` protocol. Source and restored databases returned the same authenticated valuation: Mechanical Switch `90.000000@8.47677778=76291` and PLA Basic Filament `1940.000000@1.21854500=236398`. The rehearsal exited with `PASS: the restore reproduces the valuation to the centavo.` This proves the database round trip locally; the CI job still awaits its first run on a Git remote.
+
+### S12 correction: duplicate overhead category in one file
+
+`0016` promised that a repeated category takes the later amount, but it appended both lines and `add_overhead_version` rejected the duplicate id. A new integration test reproduced the failure. `0017_deduplicate_overhead_import.sql` keeps the last amount for each category id before creating the version; the test now passes. This is a new migration because `0016` may already have been applied.
+
+### Release audit after S14
+
+The webpack production build passes, and the full database and costing suite passes with 299 tests. The restore rehearsal was rerun against PostgreSQL 18 with `0017` included and again returned identical authenticated valuations.
+
+The keyboard suite now contains completion flows for a purchase, a production run and a sale. Its sale focus sweep checks each named control instead of accepting any input with the same tag. The throwaway account seed now creates a material and a recipe-backed product for those flows. These new authenticated browser checks are **written, not yet run**: `E2E_EMAIL` and `E2E_PASSWORD` are not set in this workspace. The public axe checks still pass, two of two; the other twenty-two correctly skip without those credentials. The hosted CI job also awaits a Git remote. The UI no longer advertises the completed import, onboarding and ledger stages as future features.

@@ -209,6 +209,31 @@ describe('overhead imports as one version for the whole file', () => {
     });
     expect(after).toBe(before);
   });
+
+  it('uses the later amount when a category appears twice in one file', async () => {
+    const id = await t.asUser(owner, async () => {
+      const r = await t.db.query<{ import_overhead: string }>(
+        'select public.import_overhead($1,$2::jsonb,100)',
+        [
+          org,
+          JSON.stringify([
+            { category: 'Electricity', amount_cents: 10000, effective_from: '2026-04-01' },
+            { category: 'electricity', amount_cents: 25000 },
+          ]),
+        ],
+      );
+      return r.rows[0]!.import_overhead;
+    });
+    const lines = await t.asUser(owner, async () => {
+      const r = await t.db.query<{ count: string; amount: string }>(
+        `select count(*)::text as count, sum(monthly_amount_cents)::text as amount
+         from public.overhead_version_lines where overhead_version_id=$1`,
+        [id],
+      );
+      return r.rows[0]!;
+    });
+    expect(lines).toEqual({ count: '1', amount: '25000' });
+  });
 });
 
 describe('recipe lines import as one revision per product', () => {

@@ -21,10 +21,7 @@ beforeAll(async () => {
 });
 afterAll(async () => t.close());
 
-const script = (name: string) =>
-  readFileSync(join(process.cwd(), 'scripts', name), 'utf8')
-    // `set local` needs a transaction; the harness runs statements directly.
-    .replaceAll('set local role', 'set role');
+const script = (name: string) => readFileSync(join(process.cwd(), 'scripts', name), 'utf8');
 
 it('the seed builds the F-01 stock, and the valuation can be compared on', async () => {
   const owner = await t.createUser('rehearsal@costed.test');

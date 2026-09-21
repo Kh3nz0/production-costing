@@ -55,10 +55,10 @@ export async function seed(email: string, password: string): Promise<void> {
           body: JSON.stringify({ p_name: 'End to end' }),
         }).then((r) => r.json())) as string);
 
-  const existing = (await api(`items?select=id&item_type=eq.finished_product&limit=1`, token)) as {
+  const existing = (await api(`items?select=id,name&item_type=eq.finished_product`, token)) as {
     id: string;
+    name: string;
   }[];
-  if (existing.length > 0) return;
 
   const units = (await api('units?select=id,code&code=eq.pc&limit=1', token)) as {
     id: string;
@@ -66,22 +66,84 @@ export async function seed(email: string, password: string): Promise<void> {
   }[];
   const piece = units[0]!.id;
 
-  const item = (await api('items', token, {
+  if (!existing.some((item) => item.name === 'End-to-end widget')) {
+    const item = (await api('items', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        org_id: orgId,
+        name: 'End-to-end widget',
+        item_type: 'finished_product',
+        base_unit_id: piece,
+        purchase_unit_id: piece,
+        purchase_to_base_factor: 1,
+        created_by: userId,
+      }),
+    })) as { id: string }[];
+    await api('rpc/record_opening_balance', token, {
+      method: 'POST',
+      body: JSON.stringify({ p_item_id: item[0]!.id, p_qty: 50, p_unit_cost: 80 }),
+    });
+  }
+
+  // The keyboard flows need a material to purchase and a product with a recipe
+  // to make. Keep these named fixtures in the throwaway end-to-end org only.
+  const grams = (await api('units?select=id&code=eq.g&limit=1', token)) as { id: string }[];
+  const materials = (await api(
+    `items?select=id,name&org_id=eq.${orgId}&item_type=eq.raw_material`,
+    token,
+  )) as { id: string; name: string }[];
+  let material = materials.find((item) => item.name === 'End-to-end filament')?.id;
+  if (material === undefined) {
+    const created = (await api('items', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        org_id: orgId,
+        name: 'End-to-end filament',
+        item_type: 'raw_material',
+        base_unit_id: grams[0]!.id,
+        purchase_unit_id: grams[0]!.id,
+        purchase_to_base_factor: 1,
+        created_by: userId,
+      }),
+    })) as { id: string }[];
+    material = created[0]!.id;
+    await api('rpc/record_opening_balance', token, {
+      method: 'POST',
+      body: JSON.stringify({ p_item_id: material, p_qty: 100000, p_unit_cost: 1 }),
+    });
+  }
+
+  const products = (await api(
+    `items?select=id,name&org_id=eq.${orgId}&item_type=eq.finished_product`,
+    token,
+  )) as { id: string; name: string }[];
+  let product = products.find((item) => item.name === 'End-to-end keyboard product')?.id;
+  if (product === undefined) {
+    product = (await api('rpc/create_product', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        p_org_id: orgId,
+        p_name: 'End-to-end keyboard product',
+        p_sku: 'E2E-KEYBOARD',
+        p_base_unit_id: piece,
+        p_expected_failure_rate: 0,
+      }),
+    })) as string;
+  }
+  await api('rpc/save_product_recipe', token, {
     method: 'POST',
     body: JSON.stringify({
-      org_id: orgId,
-      name: 'End-to-end widget',
-      item_type: 'finished_product',
-      base_unit_id: piece,
-      purchase_unit_id: piece,
-      purchase_to_base_factor: 1,
-      created_by: userId,
+      p_item_id: product,
+      p_lines: [
+        {
+          line_type: 'material',
+          ref_item_id: material,
+          qty_per_unit: 1,
+          unit_id: grams[0]!.id,
+          waste_rate: 0,
+        },
+      ],
+      p_notes: 'End-to-end keyboard flow',
     }),
-  })) as { id: string }[];
-
-  await fetch(`${url}/rest/v1/rpc/record_opening_balance`, {
-    method: 'POST',
-    headers: { apikey: anon, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ p_item_id: item[0]!.id, p_qty: 50, p_unit_cost: 80 }),
   });
 }

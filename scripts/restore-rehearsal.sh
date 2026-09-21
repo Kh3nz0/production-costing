@@ -34,9 +34,11 @@ BEFORE=$(psql_do -d costed_source -At -f scripts/restore-valuation.sql)
 echo "    valuation before the dump: $BEFORE"
 
 echo "==> dumping and restoring into an empty database"
-pg_dump -h "$HOST" -p "$PORT" -U "$USER" -d costed_source --no-owner --no-acl > /tmp/costed.sql
+pg_dump -h "$HOST" -p "$PORT" -U "$USER" -d costed_source --no-owner --clean --if-exists --inserts > /tmp/costed.sql
 psql_do -d postgres -c 'drop database if exists costed_restored;' -c 'create database costed_restored;'
-psql_do -d costed_restored -f scripts/supabase-shim.sql >/dev/null
+# The dump includes the auth shim and public schema. Running the shim here
+# would make the restore fail when it tries to create those objects again.
+# --clean removes the destination's default public schema before recreating it.
 psql_do -d costed_restored -f /tmp/costed.sql >/dev/null
 
 AFTER=$(psql_do -d costed_restored -At -f scripts/restore-valuation.sql)

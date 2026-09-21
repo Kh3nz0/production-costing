@@ -8,8 +8,6 @@ import { formatQuantity, formatRate, toDecimal } from '@/lib/decimal';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { archiveItem, restoreItem } from '../../actions';
 
-const TABS = ['Overview', 'Stock', 'Cost history', 'Movements', 'Used in'] as const;
-
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const item = await getItem(id);
@@ -83,23 +81,6 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap gap-1 border-b border-border-strong">
-        {TABS.map((tab, i) => (
-          <span
-            key={tab}
-            aria-current={i === 0 ? 'page' : undefined}
-            className={`text-body cursor-default px-4 py-2.5 ${
-              i === 0
-                ? 'border-b-2 border-accent font-medium text-text-primary'
-                : 'text-text-tertiary'
-            }`}
-            title={i === 0 ? undefined : 'Arrives with the inventory ledger at stage S4'}
-          >
-            {tab}
-          </span>
-        ))}
-      </div>
-
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {readouts.map(([label, text]) => (
           <div key={label} className="rounded-card border border-border-strong bg-surface p-5">
@@ -128,10 +109,14 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         </p>
       ) : null}
 
-      <p className="text-caption mt-6 max-w-[68ch] text-text-tertiary">
-        Cost history, movements and where this item is used all read from the inventory ledger,
-        which arrives at stage S4. Until then there is nothing truthful to put on those tabs.
-      </p>
+      <div className="mt-6 flex flex-wrap gap-4 text-body-sm">
+        <Link href="/inventory/movements" className="text-accent-text underline">
+          View stock movements
+        </Link>
+        <Link href="/inventory/valuation" className="text-accent-text underline">
+          View inventory valuation
+        </Link>
+      </div>
     </main>
   );
 }
