@@ -586,7 +586,7 @@ Six steps at `/onboarding/business` through `/onboarding/channels`, each writing
 
 **Done when:** every formula has a passing test including its worked example; every mutation has an integration test asserting ledger and balance agreement; zero axe violations per route; keyboard-only completion of purchase, run and sale; a `pg_dump` restore into an empty project reproduces valuation to the centavo; error logs contain no costs, prices or margins.
 
-**Status: three criteria of six.** 276 tests pass.
+**Status: four criteria of six, with the fifth and sixth set up and waiting on a test account.** 297 unit tests pass, plus a Playwright suite.
 
 | Criterion                                                                     | State                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -612,3 +612,19 @@ Where a function already existed for the thing being made — `receive_purchase`
 **A category named twice in one file is one category**, taking the later amount, rather than two rows fighting over the same name.
 
 **Reversal archives rather than deletes**, and refuses where it should. A supplier or an item that has ever been referenced stays on every record that names it, so the reversal sets `archived_at` and lets Postgres refuse anything a foreign key still holds — "provided nothing downstream references them" is enforced by the database rather than re-implemented above it. An import that wrote **movements or dated versions** — opening stock, a receipt, an overhead version, a recipe revision — is refused with the reason: the ledger is append-only and a rate version is what old records were costed against, so those are undone through their own mechanisms, not by deleting rows.
+
+### S14 reopened, 21 September 2026
+
+**Node moved to 20.20.2 (D-131), which was the single blocker on three criteria.** It was assumed to need a system install and the owner's password. It did not: `nvm` was already on the machine, installs into the home directory, touches nothing in `/usr/local` and reverses with one command. The whole gate passes under it, and the standard Turbopack build — failing on an internal port binding since S0 — now works, so `--webpack` is no longer needed.
+
+**Playwright and `@axe-core/playwright` are installed, with `pnpm e2e`.** Deliberately a separate command from `pnpm verify`, which stays fast and offline.
+
+| Criterion                     | State                                                                                                                                                                                                                                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Zero axe violations per route | **Public routes pass**: `/sign-in` and `/forgot-password`, against WCAG 2.0 and 2.1 A and AA. The twenty-two signed-in routes are written and **skip with a message** until `E2E_EMAIL` and `E2E_PASSWORD` are supplied. Credentials are read from the environment and never committed |
+| Keyboard-only completion      | Written and skipping for the same reason. It tabs through the sale form collecting what the focus ring actually reaches, then records a sale pressing Enter rather than clicking — a control the keyboard cannot reach fails by the flow stopping, which is the honest failure         |
+| The phone criterion from S9   | Written as an assertion rather than a stopwatch: the product picker must be wider than 120px at 390px — the exact defect F-69 recorded, a select crushed to a bare chevron — and nothing may overflow the viewport sideways                                                            |
+
+**The first audit run failed, and the failure was not in the app.** Both violations were on `#__next_error__`, Next's error overlay: the dev server had been running across a Node change and a dependency install, and its client chunks were stale. Restarting it made both routes pass. Worth recording because the failure looked exactly like two real accessibility defects — a missing `<title>` and a missing `lang` — and was neither.
+
+**Still blocked, and now the only things that are.** The `pg_dump` restore check and the `receive_purchase` concurrency proof both need a Postgres with more than one connection. That needs the Supabase CLI, which needs Docker, which is not installed — and Docker Desktop is a genuine system install rather than a home-directory one.
