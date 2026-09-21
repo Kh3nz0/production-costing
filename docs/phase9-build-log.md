@@ -648,3 +648,17 @@ F-81: a select with **no accessible name at all** on New purchase, a critical vi
 **Both are the same lesson as the rest of this project.** The arithmetic was never wrong. What was wrong was a thing measured against the wrong background, and a label that was not attached to its control — and neither is visible in a diff.
 
 **Still blocked, and now the only two.** The `pg_dump` restore check and the `receive_purchase` concurrency proof both need a Postgres with more than one connection: the Supabase CLI, which needs Docker, which is a genuine system install.
+
+### S14, the last two criteria
+
+**`receive_purchase` under genuine concurrency — the gap open since S3 — is closed.** Two simultaneous receipts of one purchase are issued against the **live project** over HTTP, which is real Postgres with real connections and a better proof than a local container, because it is the database the app actually uses. Exactly one succeeds; the other is refused by the status check with _"This purchase has already been received"_; the item gains 1,000 g once rather than twice; and the ledger holds one movement, not two. Run five times in a row.
+
+The limitation, stated: this proves the **outcome** is correct under two simultaneous requests. It does not directly observe the second call blocking on the purchase row's lock — that is inference from the refusal message, which can only be produced after the first call committed.
+
+**The `pg_dump` restore rehearsal is written and runs in CI**, where Postgres and `pg_dump` exist and this machine has neither. `scripts/restore-rehearsal.sh` builds the schema from the migration files, seeds F-01's stock through the real functions — a two-line receipt with landed cost allocated by value, and a waste adjustment — dumps it, restores into an empty database, and compares what each one says the stock is worth. It fails loudly if the two disagree, and fails if the comparison is empty, because a check that compares nothing passes for the wrong reason.
+
+The figures are F-01's on purpose: ₱1.218545 per gram and ₱8.476778 per piece are where a restore that loses numeric precision would show it first.
+
+**What is proven and what is not.** The SQL the rehearsal runs is proven here, against the PGlite harness, in `restore-scripts.test.ts` — a CI job that fails on a typo in its seed teaches nothing about backups and costs a push to find out. The dump-and-restore round trip itself is **unproven until CI runs it**, because this machine has no `pg_dump`. That is a claim awaiting its first green run, and it is recorded as one rather than counted as done.
+
+The CI workflow also moves to Node 20.20.2, and the Postgres client is installed at 17 and called by absolute path: the runner ships a v16 client, `pg_dump` refuses a server newer than itself, and PATH keeps finding the old binary even with the new one installed.

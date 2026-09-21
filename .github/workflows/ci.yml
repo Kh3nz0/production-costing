@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.11.1
+          node-version: 20.20.2
           cache: pnpm
 
       # --frozen-lockfile fails the build if the lockfile and package.json
@@ -36,3 +36,41 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  restore:
+    # S14: a backup nobody has restored is a hope, not a backup. This builds the
+    # schema from the migration files, puts a known set of stock through the
+    # real functions, dumps it, restores into an empty database and compares
+    # what each one says the stock is worth.
+    #
+    # It runs here rather than locally because the runner has Postgres and
+    # pg_dump and the development machine has neither.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Postgres 17 client
+        # The runner ships a v16 client, and pg_dump refuses a server newer than
+        # itself. Install 17 and call it by its absolute path: PATH resolution
+        # keeps finding the old binary even with the new one installed.
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Restore rehearsal
+        run: ./scripts/restore-rehearsal.sh
