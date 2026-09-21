@@ -680,3 +680,7 @@ The CI workflow also moves to Node 20.20.2, and the Postgres client is installed
 The webpack production build passes, and the full database and costing suite passes with 299 tests. The restore rehearsal was rerun against PostgreSQL 18 with `0017` included and again returned identical authenticated valuations.
 
 The keyboard suite now contains completion flows for a purchase, a production run and a sale. Its sale focus sweep checks each named control instead of accepting any input with the same tag. The throwaway account seed now creates a material and a recipe-backed product for those flows. These new authenticated browser checks are **written, not yet run**: `E2E_EMAIL` and `E2E_PASSWORD` are not set in this workspace. The public axe checks still pass, two of two; the other twenty-two correctly skip without those credentials. The hosted CI job also awaits a Git remote. The UI no longer advertises the completed import, onboarding and ledger stages as future features.
+
+### First hosted CI run
+
+The repository is live at `Kh3nz0/production-costing`. The first restore job passed. The first verify job reached the build and exposed that CI has no `.env.local`; Next loads page modules while collecting route metadata, and the Supabase client requires its public URL and key at that point. Commit `1493518` supplies non-secret placeholder public configuration to the build step. The next run completed with both **verify** and **restore** green.
