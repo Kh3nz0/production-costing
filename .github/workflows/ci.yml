@@ -36,6 +36,13 @@ jobs:
 
       - name: Build
         run: pnpm build
+        # Page modules construct the Supabase client while Next collects route
+        # metadata. CI does not contact Supabase, but the client still requires
+        # syntactically valid public configuration at build time.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
   restore:
     # S14: a backup nobody has restored is a hope, not a backup. This builds the
