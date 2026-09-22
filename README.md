@@ -39,7 +39,7 @@ The upgrade also freed the standard **Turbopack build**: `pnpm build` works. It 
 
 The RLS tests do not need any of that. `src/test/pg.ts` runs the migrations against **PGlite**, which is PostgreSQL compiled to WebAssembly, so the policies are executed by a real Postgres with no Docker and no network. What it does not cover is stated in that file: Supabase's Auth service and PostgREST are not present, so the tests prove the database refuses the rows, not that the HTTP layer in front of it does.
 
-Before release, run `pnpm e2e` with `E2E_EMAIL` and `E2E_PASSWORD` set for the throwaway test account. The authenticated browser checks skip without them. The CI workflow also runs a PostgreSQL dump and restore rehearsal on each push or pull request; its first hosted run needs a Git remote.
+Before release, run `pnpm e2e` with the throwaway browser-test credentials described below. The authenticated browser checks skip when their account is missing. The CI workflow also runs a PostgreSQL dump and restore rehearsal on each push or pull request.
 
 ## Where the money rules live
 
@@ -57,9 +57,9 @@ Three rules are enforced rather than documented:
 
 ## The browser checks
 
-`pnpm e2e` runs Playwright: every route audited against WCAG 2.0 and 2.1 A and AA, a purchase, a run and a sale completed with the keyboard alone, the sale form measured at 390px, and two simultaneous receipts of one purchase.
+`pnpm e2e` defines Playwright audits for every rendered route variant against WCAG 2.0 and 2.1 A and AA. It also checks both redirect-only pages, completes a purchase, a run and a sale with the keyboard alone, measures the sale form at 390px, and fires two simultaneous receipts of one purchase. Account-dependent checks skip until their credentials are supplied below.
 
-It builds and starts the app itself. Point it at something already running with `E2E_BASE_URL`, but prefer not to point it at `next dev`: the dev server compiles on first request and holds an HMR socket open, which makes the audit slow and intermittent (F-82).
+It builds and starts the production app itself, so the audit covers the artifact that ships and route compilation is outside individual test timings (F-82). Point it at an existing deployment with `E2E_BASE_URL`. On macOS the server script uses `caffeinate` to prevent idle sleep during the run; keep the lid open (F-84). Only run one local `pnpm e2e` at a time; a lock makes a second run fail immediately instead of sharing build output or a server.
 
 The signed-in checks need an account, supplied by the environment and never committed:
 
@@ -68,3 +68,10 @@ E2E_EMAIL=... E2E_PASSWORD=... pnpm e2e
 ```
 
 Without them those specs skip and say so. There is no public sign-up route — that is S1's criterion — so a test account is created in the Supabase dashboard under Authentication, with **Auto Confirm User** ticked.
+
+The `/setup` audit needs a second account that deliberately remains outside every organisation:
+
+```bash
+E2E_EMAIL=... E2E_PASSWORD=... \
+E2E_SETUP_EMAIL=... E2E_SETUP_PASSWORD=... pnpm e2e
+```

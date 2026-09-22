@@ -684,3 +684,11 @@ The keyboard suite now contains completion flows for a purchase, a production ru
 ### First hosted CI run
 
 The repository is live at `Kh3nz0/production-costing`. The first restore job passed. The first verify job reached the build and exposed that CI has no `.env.local`; Next loads page modules while collecting route metadata, and the Supabase client requires its public URL and key at that point. Commit `1493518` supplies non-secret placeholder public configuration to the build step. The next run completed with both **verify** and **restore** green.
+
+### Release audit correction: browser route coverage
+
+The first axe suite's “every route” claim meant 24 chosen URLs. The app has 53 rendered route variants after the finite report, settings and onboarding parameters are expanded. The missing set included all six entity detail pages, eleven reports, four settings sections, five onboarding steps, Reset password, Permission denied and Setup.
+
+The suite now derives the finite variants from the same definitions as the app and seeds stable item, product, purchase and run IDs for the six entity pages. Navigation must return a successful document, retain the requested pathname and render its `main` landmark before axe runs, so an auth, setup or not-found redirect cannot pass under the wrong route name. The two redirect-only page routes, `/` and `/settings`, have explicit destination assertions.
+
+Fifty-two variants use the normal end-to-end account. `/setup` can render only for an authenticated user with no organisation, so its test uses separate `E2E_SETUP_EMAIL` and `E2E_SETUP_PASSWORD` credentials and skips with that instruction when they are absent. The expanded signed-in sweep and that first-run account are awaiting their first run; the earlier 30-check result proves the original 24-route subset and the workflow tests only. With no credentials in this workspace, the expanded manifest ran against a local production build: all three public audits passed and 58 account-dependent checks skipped by design. The full 299-test database and costing suite, typecheck, lint, format check and a webpack production build pass; the default Turbopack build cannot bind its internal process port inside this execution environment.

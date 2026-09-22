@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { seed } from './seed';
-import { ready, signIn } from './sign-in';
+import { openRoute, signIn } from './sign-in';
 
 /**
  * S14: a purchase, a run and a sale completed with a keyboard alone.
@@ -57,8 +57,7 @@ test.describe('keyboard-only completion', () => {
   });
 
   test('every control on Record a sale is reachable by tabbing', async ({ page }) => {
-    await page.goto('/sales/new');
-    await ready(page);
+    await openRoute(page, '/sales/new');
 
     // Walk forward through the document and collect what the focus ring lands
     // on. A control that never receives focus is not on this list, which is
@@ -97,8 +96,7 @@ test.describe('keyboard-only completion', () => {
   });
 
   test('a sale can be recorded without a mouse', async ({ page }) => {
-    await page.goto('/sales/new');
-    await ready(page);
+    await openRoute(page, '/sales/new');
 
     await chooseByKeyboard(page, page.getByLabel('Product').first(), 'End-to-end widget');
     await tabTo(page, page.getByLabel(/^quantity$/i).first());
@@ -117,8 +115,7 @@ test.describe('keyboard-only completion', () => {
   });
 
   test('a purchase can be saved and received without a mouse', async ({ page }) => {
-    await page.goto('/purchases/new');
-    await ready(page);
+    await openRoute(page, '/purchases/new');
 
     await chooseByKeyboard(page, page.getByLabel('Item').first(), 'End-to-end filament');
     await tabTo(page, page.getByLabel(/^Quantity/).first());
@@ -136,8 +133,7 @@ test.describe('keyboard-only completion', () => {
   });
 
   test('a production run can be started and completed without a mouse', async ({ page }) => {
-    await page.goto('/production/new');
-    await ready(page);
+    await openRoute(page, '/production/new');
 
     await chooseByKeyboard(page, page.getByLabel('Product'), 'End-to-end keyboard product');
     await tabTo(page, page.getByLabel('How many good units do you want'));
@@ -168,8 +164,7 @@ test.describe('the sale form on a phone', () => {
     await seed(email!, password!);
     await signIn(page, email!, password!);
 
-    await page.goto('/sales/new');
-    await ready(page);
+    await openRoute(page, '/sales/new');
 
     // The defect F-69 recorded: a select crushed to a bare chevron, with no
     // room for a product name. Anything under 120px is not a usable picker.

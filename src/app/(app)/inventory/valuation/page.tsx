@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { requireOrg } from '@/lib/org';
 import { valuationAsOf } from '@/lib/stock';
 import { itemTypeLabel, type ItemType } from '@/lib/item-types';
@@ -94,11 +95,8 @@ export default async function ValuationPage({
             </thead>
             <tbody>
               {[...byType.entries()].map(([type, list]) => (
-                <>
-                  <tr
-                    key={`${type}-head`}
-                    className="border-t border-border-strong bg-surface-sunken"
-                  >
+                <Fragment key={type}>
+                  <tr className="border-t border-border-strong bg-surface-sunken">
                     <th
                       scope="colgroup"
                       colSpan={3}
@@ -126,7 +124,7 @@ export default async function ValuationPage({
                       </td>
                     </tr>
                   ))}
-                </>
+                </Fragment>
               ))}
               <tr className="border-t border-border-strong bg-surface-sunken">
                 <th scope="row" colSpan={3} className="text-heading-sm px-5 py-3 text-text-primary">

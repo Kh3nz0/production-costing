@@ -10,6 +10,13 @@
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
+export interface SeededRoutes {
+  itemId: string;
+  productId: string;
+  purchaseId: string;
+  runId: string;
+}
+
 async function api(path: string, token: string, init: RequestInit = {}): Promise<unknown> {
   const response = await fetch(`${url}/rest/v1/${path}`, {
     ...init,
@@ -26,7 +33,7 @@ async function api(path: string, token: string, init: RequestInit = {}): Promise
   return text === '' ? null : JSON.parse(text);
 }
 
-export async function seed(email: string, password: string): Promise<void> {
+export async function seed(email: string, password: string): Promise<SeededRoutes> {
   const auth = await fetch(`${url}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     headers: { apikey: anon, 'Content-Type': 'application/json' },
@@ -41,7 +48,12 @@ export async function seed(email: string, password: string): Promise<void> {
     JSON.parse(Buffer.from(token.split('.')[1]!, 'base64').toString()) as { sub: string }
   ).sub;
 
-  const orgs = (await api('organizations?select=id&limit=1', token)) as { id: string }[];
+  // Match getCurrentOrg(): the browser and the API seed must choose the same
+  // organisation when the account belongs to more than one.
+  const orgs = (await api(
+    'organizations?select=id,name&archived_at=is.null&order=name.asc,id.asc&limit=1',
+    token,
+  )) as { id: string; name: string }[];
   const orgId =
     orgs.length > 0
       ? orgs[0]!.id
@@ -55,10 +67,10 @@ export async function seed(email: string, password: string): Promise<void> {
           body: JSON.stringify({ p_name: 'End to end' }),
         }).then((r) => r.json())) as string);
 
-  const existing = (await api(`items?select=id,name&item_type=eq.finished_product`, token)) as {
-    id: string;
-    name: string;
-  }[];
+  const existing = (await api(
+    `items?select=id,name&org_id=eq.${orgId}&item_type=eq.finished_product`,
+    token,
+  )) as { id: string; name: string }[];
 
   const units = (await api('units?select=id,code&code=eq.pc&limit=1', token)) as {
     id: string;
@@ -66,7 +78,8 @@ export async function seed(email: string, password: string): Promise<void> {
   }[];
   const piece = units[0]!.id;
 
-  if (!existing.some((item) => item.name === 'End-to-end widget')) {
+  let widget = existing.find((item) => item.name === 'End-to-end widget')?.id;
+  if (widget === undefined) {
     const item = (await api('items', token, {
       method: 'POST',
       body: JSON.stringify({
@@ -79,9 +92,10 @@ export async function seed(email: string, password: string): Promise<void> {
         created_by: userId,
       }),
     })) as { id: string }[];
+    widget = item[0]!.id;
     await api('rpc/record_opening_balance', token, {
       method: 'POST',
-      body: JSON.stringify({ p_item_id: item[0]!.id, p_qty: 50, p_unit_cost: 80 }),
+      body: JSON.stringify({ p_item_id: widget, p_qty: 50, p_unit_cost: 80 }),
     });
   }
 
@@ -146,4 +160,60 @@ export async function seed(email: string, password: string): Promise<void> {
       p_notes: 'End-to-end keyboard flow',
     }),
   });
+
+  const routePurchases = (await api(
+    `purchases?select=id&org_id=eq.${orgId}&reference_no=eq.E2E-ROUTE&limit=1`,
+    token,
+  )) as { id: string }[];
+  let purchaseId = routePurchases[0]?.id;
+  if (purchaseId === undefined) {
+    const purchases = (await api('purchases', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        org_id: orgId,
+        reference_no: 'E2E-ROUTE',
+        purchase_date: new Date().toISOString().slice(0, 10),
+        notes: 'Accessibility route fixture',
+        created_by: userId,
+      }),
+    })) as { id: string }[];
+    purchaseId = purchases[0]!.id;
+  }
+
+  const routeLines = (await api(
+    `purchase_lines?select=id&purchase_id=eq.${purchaseId}&limit=1`,
+    token,
+  )) as { id: string }[];
+  if (routeLines.length === 0) {
+    await api('purchase_lines', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        org_id: orgId,
+        purchase_id: purchaseId,
+        item_id: material,
+        qty_ordered: 1,
+        qty_received: 1,
+        purchase_unit_id: grams[0]!.id,
+        unit_price_cents: 100,
+        created_by: userId,
+      }),
+    });
+  }
+
+  const routeRuns = (await api(
+    `production_runs?select=id&org_id=eq.${orgId}&notes=eq.Accessibility%20route%20fixture&limit=1`,
+    token,
+  )) as { id: string }[];
+  const runId =
+    routeRuns[0]?.id ??
+    ((await api('rpc/start_production_run', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        p_item_id: product,
+        p_planned_qty: 1,
+        p_notes: 'Accessibility route fixture',
+      }),
+    })) as string);
+
+  return { itemId: widget, productId: product, purchaseId, runId };
 }

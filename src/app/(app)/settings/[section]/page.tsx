@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { formatPercent, formatQuantity, formatRate, groupDigits, toDecimal } from '@/lib/decimal';
 import { Money } from '@/lib/money';
 import { SettingForm } from '../setting-form';
+import { SETTINGS_SECTIONS, type SettingsSection } from '../sections';
 
 // The stored method is an enum; these are the words docs/phase4-content-screens.md
 // uses for it. A raw `per_attended_hour` on screen is a leak, not a label.
@@ -16,17 +17,7 @@ const OVERHEAD_METHOD: Record<string, string> = {
   none: 'Not spread',
 };
 
-const sections = [
-  ['business', 'Business'],
-  ['equipment', 'Equipment'],
-  ['utilities', 'Utility rates'],
-  ['labour', 'Labour'],
-  ['overhead', 'Overhead'],
-  ['channels', 'Sales channels'],
-] as const;
-
 type Row = Record<string, unknown>;
-type Section = (typeof sections)[number][0];
 
 // Explicit text projections keep financial values exact before JSON parsing.
 const projections = {
@@ -297,7 +288,7 @@ function history(
 
 export async function generateMetadata({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;
-  const title = sections.find(([key]) => key === section)?.[1] ?? 'Settings';
+  const title = SETTINGS_SECTIONS.find(([key]) => key === section)?.[1] ?? 'Settings';
   return { title: `${title}` };
 }
 
@@ -307,8 +298,8 @@ export default async function SettingsSection({
   params: Promise<{ section: string }>;
 }) {
   const { section } = await params;
-  if (!sections.some(([key]) => key === section)) notFound();
-  const current = section as Section;
+  if (!SETTINGS_SECTIONS.some(([key]) => key === section)) notFound();
+  const current = section as SettingsSection;
   const org = await requireOrg();
   const supabase = await createClient();
   async function rows(table: keyof typeof projections, order = 'name'): Promise<Row[]> {
@@ -377,7 +368,7 @@ export default async function SettingsSection({
         that applied when they were recorded.
       </p>
       <nav aria-label="Settings sections" className="my-6 flex flex-wrap gap-2">
-        {sections.map(([key, label]) => (
+        {SETTINGS_SECTIONS.map(([key, label]) => (
           <Link
             key={key}
             href={`/settings/${key}` as '/settings/business'}
