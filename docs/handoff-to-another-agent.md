@@ -27,17 +27,17 @@ All fourteen stages are built. **299 database and costing tests pass.** Migratio
 | Stage              | State                                                                                                                                                                                                                                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | S0, S2–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                                   |
-| S1                 | Sign-in, tenant isolation and no public sign-up are proven. The live emailed recovery link has not been opened, so its final acceptance check remains outstanding.                                                                                                                       |
+| S1                 | Sign-in, tenant isolation and the absence of a sign-up page are proven. Live Auth still allows API signups (`disable_signup: false`), and the emailed recovery link has not been opened. Both checks remain outstanding.                                                                 |
 | S9                 | Five criteria of five under the specified Playwright timing method. A scripted 390px sale saved in 0.93, 0.48, 0.48 and 0.79 seconds, measured from first edit through the saved page. This measures the browser flow, not a person's entry speed.                                       |
 | S14                | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 54 rendered route variants passed axe across two accounts. Tier-1 screens also passed at 390px and 768px. The audits cover their seeded states. |
 
 **Optional usability check.** On a real phone or a 390px browser viewport, time a person recording a sale and note any hesitation or blocked touch target. The written S9 test plan specifies “Playwright, measured” for the under-20-second check, and that check passed. Its scripted speed does not establish a person's entry time.
 
-**Remaining acceptance check.** Run the app at `http://localhost:3000` (the configured site URL), request a password recovery email from `/forgot-password` for an account whose inbox you control, open its live link, and confirm it lands on `/reset-password` rather than `/dashboard`. The expired-link screen and middleware rule are covered, but the live emailed callback was never exercised. Do not reset the throwaway browser-test account unless its credentials are updated afterward.
+**Remaining S1 checks.** In the Supabase dashboard for project `wdluhlpjvjwfyytvduhs`, turn off **Allow new users to sign up** under Authentication → General Configuration. `e2e/auth-config.spec.ts` reads the live public Auth settings and must pass afterward; the absence of a sign-up page does not disable the Auth API. Then run the app at `http://localhost:3000` (the configured site URL), request a password recovery email from `/forgot-password` for an account whose inbox you control, open its live link, and confirm it lands on `/reset-password` rather than `/dashboard`. Do not reset the throwaway browser-test account unless its credentials are updated afterward.
 
 **Later design work.** Dark mode needs the Figma dark token values; do not invent them. Some native selects and empty states still predate the shared components, though the audited route states pass axe.
 
-The full 92-check browser manifest passed in one live production run with both throwaway accounts, including `/setup`, concurrent receipt, keyboard purchase/run/sale, 28 Tier-1 width audits at 390px and 768px, saved Sale detail, and a 0.79-second scripted 390px sale. The timed sale check also passed three earlier repetitions.
+The earlier 92-check browser manifest passed in one live production run with both throwaway accounts, including `/setup`, concurrent receipt, keyboard purchase/run/sale, 28 Tier-1 width audits at 390px and 768px, saved Sale detail, and a 0.79-second scripted 390px sale. The timed sale check also passed three earlier repetitions. The manifest now has a 93rd check for private Auth configuration; it currently fails on the live `disable_signup: false` setting, so the current browser gate is red until that setting is changed.
 
 ## How to run anything
 
@@ -107,7 +107,7 @@ Every one of these is a defect that actually happened.
 | What                                      | Where                                         |
 | ----------------------------------------- | --------------------------------------------- |
 | Every decision and why                    | `docs/decision-log.md` — D-001 to D-131       |
-| Every defect and how it was found         | `docs/phase7-status-and-qa.md` — F-01 to F-88 |
+| Every defect and how it was found         | `docs/phase7-status-and-qa.md` — F-01 to F-89 |
 | What each stage did                       | `docs/phase9-build-log.md`                    |
 | Every formula with a worked example       | `docs/phase3-calculations.md`                 |
 | Token map, component map, route inventory | `docs/phase8-handoff.md`                      |
