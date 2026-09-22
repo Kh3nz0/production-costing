@@ -190,21 +190,25 @@ export default async function ProductPricingPage({
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-caption text-text-secondary">Full cost with overhead</dt>
-                <dd className="text-heading-md tabular-nums text-text-primary">
-                  {fullCost.format()}
+                <dd>
+                  <span className="text-heading-md tabular-nums text-text-primary">
+                    {fullCost.format()}
+                  </span>
+                  <p className="text-caption mt-1 text-text-tertiary">
+                    A price has to recover overhead, so the price is built on this.
+                  </p>
                 </dd>
-                <p className="text-caption mt-1 text-text-tertiary">
-                  A price has to recover overhead, so the price is built on this.
-                </p>
               </div>
               <div>
                 <dt className="text-caption text-text-secondary">Production cost per unit</dt>
-                <dd className="text-heading-md tabular-nums text-text-primary">
-                  {productionCost.format()}
+                <dd>
+                  <span className="text-heading-md tabular-nums text-text-primary">
+                    {productionCost.format()}
+                  </span>
+                  <p className="text-caption mt-1 text-text-tertiary">
+                    What a sale subtracts, because overhead never becomes stock value.
+                  </p>
                 </dd>
-                <p className="text-caption mt-1 text-text-tertiary">
-                  What a sale subtracts, because overhead never becomes stock value.
-                </p>
               </div>
             </dl>
             {overhead !== null ? (
