@@ -61,7 +61,7 @@ No components, no routes beyond `/`, no Supabase client, no schema. The page at 
 
 **Done when:** owner reaches the dashboard; a user in another org receives zero rows from every table, proven by a test authenticated as that user; no public sign-up route; a recovery link lands on the reset screen, not the dashboard.
 
-**Status: done.** 20 September 2026.
+**Status at the S1 handoff: three of four proven; live emailed recovery-link click outstanding.** 20 September 2026.
 
 | Requirement                                     | Status                                                                                                                                                                                                            |
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -711,4 +711,10 @@ The release audit now exercises the fourteen Tier-1 screens at both 390px and 76
 
 The route inventory named Sale detail, but `/sales/[id]` was absent. The route now reads org-scoped, persisted sale amounts as text and displays the saved revenue, COGS, gross and contribution values, fees, status, notes and lines. It does not recalculate historical cost from today's stock. A live browser check followed the Sales list link, verified the saved ₱120 revenue, ₱80 COGS and ₱40 contribution, and reached the breakdown at 390px. Rendered desktop and phone screenshots were inspected.
 
-The complete production browser suite then passed **92/92 in 3.2 minutes** with both throwaway accounts: 54 rendered route audits, 28 Tier-1 width audits and the remaining flows. The scripted phone sale took **0.79 seconds** in that run. Typecheck, lint, formatting and 299 unit/database tests passed. **S9 remains four of five** until a person reports the timed phone entry.
+The complete production browser suite then passed **92/92 in 3.2 minutes** with both throwaway accounts: 54 rendered route audits, 28 Tier-1 width audits and the remaining flows. The scripted phone sale took **0.79 seconds** in that run. Typecheck, lint, formatting and 299 unit/database tests passed. The later acceptance correction below resolves the S9 timing status.
+
+### S9 timing acceptance correction, 22 September 2026
+
+The handoff above imposed a human stopwatch run as S9's last gate. That was stricter than the written test plan in `phase8-build-order.md` §4, which names **“Playwright, measured”** as the timing method. The production browser test uses a 390px viewport and times the product choice, quantity and price edits, save request, and arrival on the saved Sales page. It passed in 0.93, 0.48 and 0.48 seconds in individual live runs, then 0.57 and 0.79 seconds in complete live suite runs. Under the specified method, **S9 is five of five**. This is evidence for scripted browser completion within 20 seconds; it does not establish that a person can enter the sale that quickly. A human timed run remains a useful usability check, outside the written S9 gate.
+
+The same release audit found an older acceptance gap in S1: the live emailed recovery link was never opened, as the S1 table records. The reset route, expired-link path and middleware rule are covered, but the actual email callback needs a mailbox or an admin-generated link. **All fourteen stages are built; S1's live recovery-link check remains unproven.**

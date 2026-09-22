@@ -187,7 +187,8 @@ test.describe('the sale form on a phone', () => {
 
     // Measure the ready form, the three required edits, and the server save.
     // Sign-in and fixture creation happen before the clock starts. This is a
-    // browser timing check; a person's timed entry still needs its own run.
+    // This is the Playwright timing check specified in the S9 test plan. It
+    // measures the browser flow, not a person's entry speed.
     const started = performance.now();
     await page.getByLabel('Product').first().selectOption({ label: 'End-to-end widget' });
     await page

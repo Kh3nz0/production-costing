@@ -39,7 +39,7 @@ The upgrade also freed the standard **Turbopack build**: `pnpm build` works. It 
 
 The RLS tests do not need any of that. `src/test/pg.ts` runs the migrations against **PGlite**, which is PostgreSQL compiled to WebAssembly, so the policies are executed by a real Postgres with no Docker and no network. What it does not cover is stated in that file: Supabase's Auth service and PostgREST are not present, so the tests prove the database refuses the rows, not that the HTTP layer in front of it does.
 
-Before release, run `pnpm e2e` with the throwaway browser-test credentials described below. The authenticated browser checks skip when their account is missing. The CI workflow also runs a PostgreSQL dump and restore rehearsal on each push or pull request.
+Before release, run `pnpm e2e` with the throwaway browser-test credentials described below. The authenticated browser checks skip when their account is missing. The CI workflow also runs a PostgreSQL dump and restore rehearsal on each push or pull request. The live emailed password-recovery callback still needs a one-time check with an inbox you control.
 
 ## Where the money rules live
 
@@ -57,7 +57,7 @@ Three rules are enforced rather than documented:
 
 ## The browser checks
 
-`pnpm e2e` defines Playwright audits for every rendered route variant against WCAG 2.0 and 2.1 A and AA, plus Tier-1 screen audits at 390px and 768px with a horizontal-overflow check. It also checks both redirect-only pages, completes a purchase, a run and a sale with the keyboard alone, verifies that Sale detail displays saved monetary amounts, measures the sale form at 390px, times a scripted sale from first edit through save, and fires two simultaneous receipts of one purchase. Account-dependent checks skip until their credentials are supplied below. The scripted sale timing does not prove that a person can finish the flow in under 20 seconds; that S9 check still needs a human run.
+`pnpm e2e` defines Playwright audits for every rendered route variant against WCAG 2.0 and 2.1 A and AA, plus Tier-1 screen audits at 390px and 768px with a horizontal-overflow check. It also checks both redirect-only pages, completes a purchase, a run and a sale with the keyboard alone, verifies that Sale detail displays saved monetary amounts, measures the sale form at 390px, times a scripted sale from first edit through save, and fires two simultaneous receipts of one purchase. Account-dependent checks skip until their credentials are supplied below. The scripted sale timing satisfies the Playwright measurement specified for S9; a person's entry time has not been measured.
 
 It builds and starts the production app itself, so the audit covers the artifact that ships and route compilation is outside individual test timings (F-82). Point it at an existing deployment with `E2E_BASE_URL`. On macOS the server script uses `caffeinate` to prevent idle sleep during the run; keep the lid open (F-84). Only run one local `pnpm e2e` at a time; a lock makes a second run fail immediately instead of sharing build output or a server.
 
