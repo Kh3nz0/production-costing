@@ -734,3 +734,9 @@ The first live emailed link, clicked about one minute after request in the same 
 The server Supabase client now appends the flow id to recovery redirects, and the callback supplies it to `exchangeCodeForSession`. The callback route runs before session refresh, preserving pending verifiers. Only an `otp_expired` error is labeled expired; a missing verifier and other failures have distinct retry messages, without reflecting upstream error text. The focused callback and middleware tests pass, including the flow id and pre-exchange verifier behavior. The full local gate passes **306 tests**, typecheck, lint, format and a webpack production build. A headless browser confirmed the new flow cookie names and the three rendered error states. A fabricated stale session plus a fabricated verifier reached the Auth code exchange and returned `link_invalid` for the deliberately bogus code, rather than `browser_mismatch`; this exercises the pre-exchange path without a real email token. **A fresh live emailed-link click is still required** to close S1.
 
 The pushed recovery-fix commit `091203c` passed both hosted CI jobs: verify and restore. This checks the code and database rehearsal but does not replace the live emailed-link click.
+
+### S1 completed, 23 September 2026
+
+A fresh recovery email was requested after the PKCE callback correction. Its live link opened the `Choose a new password` form in the same browser profile. The owner successfully changed the password, and the completed recovery redirected to the dashboard. This proves the delivered email, callback exchange, recovery-only routing, password update and final signed-in redirect as one live flow.
+
+**S1 is four of four. All fourteen stages are complete.**
