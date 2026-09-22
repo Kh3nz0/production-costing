@@ -54,11 +54,38 @@ const SEEDED_ROUTES = [
     path: (rows: SeededRoutes) => `/products/${rows.productId}/pricing`,
   },
   { name: '/production/[id]', path: (rows: SeededRoutes) => `/production/${rows.runId}` },
+  { name: '/sales/[id]', path: (rows: SeededRoutes) => `/sales/${rows.saleId}` },
 ];
 
 const REDIRECT_ROUTES = [
   { from: '/', to: '/dashboard' },
   { from: '/settings', to: '/settings/business' },
+];
+
+// The fourteen Tier-1 screens have explicit 390px and 768px Figma frames.
+// Sign in is public; these are the other thirteen, including seeded details.
+const TIER_ONE_ROUTES = [
+  ...[
+    '/dashboard',
+    '/items',
+    '/inventory',
+    '/inventory/movements',
+    '/purchases',
+    '/purchases/new',
+    '/products',
+    '/production',
+    '/sales',
+    '/sales/new',
+  ].map((name) => ({ name, path: () => name })),
+  {
+    name: '/products/[id]/cost',
+    path: (rows: SeededRoutes) => `/products/${rows.productId}/cost`,
+  },
+  {
+    name: '/products/[id]/pricing',
+    path: (rows: SeededRoutes) => `/products/${rows.productId}/pricing`,
+  },
+  { name: '/production/[id]', path: (rows: SeededRoutes) => `/production/${rows.runId}` },
 ];
 
 const email = process.env.E2E_EMAIL;
@@ -140,3 +167,46 @@ test.describe('first-run route', () => {
     await audit(page, '/setup');
   });
 });
+
+for (const width of [390, 768]) {
+  test.describe(`Tier-1 routes at ${width}px`, () => {
+    let seeded!: SeededRoutes;
+    test.use({ viewport: { width, height: 844 } });
+
+    test('/sign-in has no axe violations or page overflow', async ({ page }) => {
+      await openRoute(page, '/sign-in');
+      await audit(page, `/sign-in at ${width}px`);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `/sign-in scrolls sideways at ${width}px`).toBeLessThanOrEqual(1);
+    });
+
+    test.describe('signed-in screens', () => {
+      test.skip(
+        email === undefined || password === undefined,
+        'Set E2E_EMAIL and E2E_PASSWORD to audit the responsive screens.',
+      );
+
+      test.beforeAll(async () => {
+        if (email !== undefined && password !== undefined) seeded = await seed(email, password);
+      });
+
+      test.beforeEach(async ({ page }) => {
+        await signIn(page, email!, password!);
+      });
+
+      for (const route of TIER_ONE_ROUTES) {
+        test(`${route.name} has no axe violations or page overflow`, async ({ page }) => {
+          const path = route.path(seeded);
+          await openRoute(page, path);
+          await audit(page, `${path} at ${width}px`);
+          const overflow = await page.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          );
+          expect(overflow, `${path} scrolls sideways at ${width}px`).toBeLessThanOrEqual(1);
+        });
+      }
+    });
+  });
+}

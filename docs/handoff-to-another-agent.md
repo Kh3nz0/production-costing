@@ -24,17 +24,17 @@ These came from the owner and are not yours to relax.
 
 All fourteen stages are built. **299 database and costing tests pass.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed.
 
-| Stage          | State                                                                                                                                                                                                                                                                              |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S0–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                             |
-| S9             | Four criteria of five. A scripted 390px sale saved in 0.93, 0.48 and 0.48 seconds, measured from first edit through the saved page. The person-timed entry criterion still needs a human run.                                                                                      |
-| S14            | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 53 rendered route variants passed axe across two accounts. The route audits cover their seeded states, not every possible state or width. |
+| Stage          | State                                                                                                                                                                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S0–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                                   |
+| S9             | Four criteria of five. A scripted 390px sale saved in 0.93, 0.48 and 0.48 seconds, measured from first edit through the saved page. The person-timed entry criterion still needs a human run.                                                                                            |
+| S14            | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 54 rendered route variants passed axe across two accounts. Tier-1 screens also passed at 390px and 768px. The audits cover their seeded states. |
 
 **Next acceptance check.** On a real phone or a 390px browser viewport, sign into the throwaway end-to-end account before starting the clock. Open `/sales/new`, then time from the first product choice until the Sales page confirms the save. Choose `End-to-end widget`, leave quantity at 1, enter ₱120 as unit price and save. Record the elapsed time and any hesitation or blocked touch target. The scripted timing is useful evidence about app response; it cannot establish how long a person takes.
 
 **Later design work.** Dark mode needs the Figma dark token values; do not invent them. Some native selects and empty states still predate the shared components, though the audited route states pass axe.
 
-The full 62-check browser manifest passed in one live production run with both throwaway accounts, including `/setup`, concurrent receipt, keyboard purchase/run/sale, and a 0.57-second scripted 390px sale. The timed sale check also passed three earlier repetitions.
+The full 92-check browser manifest passed in one live production run with both throwaway accounts, including `/setup`, concurrent receipt, keyboard purchase/run/sale, 28 Tier-1 width audits at 390px and 768px, saved Sale detail, and a 0.79-second scripted 390px sale. The timed sale check also passed three earlier repetitions.
 
 ## How to run anything
 
@@ -104,7 +104,7 @@ Every one of these is a defect that actually happened.
 | What                                      | Where                                         |
 | ----------------------------------------- | --------------------------------------------- |
 | Every decision and why                    | `docs/decision-log.md` — D-001 to D-131       |
-| Every defect and how it was found         | `docs/phase7-status-and-qa.md` — F-01 to F-86 |
+| Every defect and how it was found         | `docs/phase7-status-and-qa.md` — F-01 to F-88 |
 | What each stage did                       | `docs/phase9-build-log.md`                    |
 | Every formula with a worked example       | `docs/phase3-calculations.md`                 |
 | Token map, component map, route inventory | `docs/phase8-handoff.md`                      |

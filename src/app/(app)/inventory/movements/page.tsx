@@ -23,6 +23,31 @@ export default async function MovementsPage({
     return `${d.isNegative() ? '−' : '+'}${text}`;
   };
 
+  // Both widths read the same prepared values, so a card cannot disagree with
+  // its table row about a movement's resulting balance or value effect.
+  const displayRows = rows.map((row) => {
+    const unit = row.item?.base_unit?.code;
+    const effect =
+      row.cost_effect_cents === null ? null : Money.fromCentavos(BigInt(row.cost_effect_cents));
+    return {
+      id: row.id,
+      date: row.occurred_at.slice(0, 10),
+      item: row.item?.name ?? '—',
+      type: movementLabel(row.movement_type),
+      change: `${signed(row.quantity_change)} ${unit ?? ''}`.trim(),
+      balance: formatQuantity(row.resulting_qty, unit),
+      unitCost: row.unit_cost_at_movement === null ? '—' : formatRate(row.unit_cost_at_movement),
+      effect: effect === null ? '—' : effect.format(),
+      effectTone:
+        effect === null
+          ? 'text-text-tertiary'
+          : effect.isNegative()
+            ? 'text-negative-value'
+            : 'text-text-secondary',
+      reason: row.reason ?? (row.source_table === 'purchases' ? 'From a purchase' : '—'),
+    };
+  });
+
   return (
     <main className="mx-auto max-w-content-max px-4 py-6 lg:px-6 lg:py-9">
       <InventoryHeader />
@@ -92,75 +117,93 @@ export default async function MovementsPage({
           </p>
         </div>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-card border border-border-strong bg-surface">
-          <table className="w-full min-w-[40rem] text-left">
-            <thead>
-              <tr className="bg-surface-sunken">
-                {[
-                  'Date',
-                  'Item',
-                  'Type',
-                  'Change',
-                  'Balance after',
-                  'Unit cost',
-                  'Value effect',
-                  'Why',
-                ].map((h) => (
-                  <th key={h} scope="col" className="text-micro px-5 py-3 text-text-tertiary">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const unit = row.item?.base_unit?.code;
-                const effect =
-                  row.cost_effect_cents === null
-                    ? null
-                    : Money.fromCentavos(BigInt(row.cost_effect_cents));
-                return (
-                  <tr key={row.id} className="border-t border-border-strong">
-                    <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
-                      {row.occurred_at.slice(0, 10)}
-                    </td>
-                    <td className="text-body-sm px-5 py-3 text-text-primary">
-                      {row.item?.name ?? '—'}
-                    </td>
-                    <td className="text-body-sm px-5 py-3 text-text-secondary">
-                      {movementLabel(row.movement_type)}
-                    </td>
-                    <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
-                      {signed(row.quantity_change)} {unit ?? ''}
-                    </td>
-                    <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
-                      {formatQuantity(row.resulting_qty, unit)}
-                    </td>
-                    <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
-                      {row.unit_cost_at_movement === null
-                        ? '—'
-                        : formatRate(row.unit_cost_at_movement)}
-                    </td>
-                    <td
-                      className={`text-body-sm tabular px-5 py-3 ${
-                        effect === null
-                          ? 'text-text-tertiary'
-                          : effect.isNegative()
-                            ? 'text-negative-value'
-                            : 'text-text-secondary'
-                      }`}
-                    >
-                      {effect === null ? '—' : effect.format()}
-                    </td>
-                    <td className="text-caption px-5 py-3 text-text-tertiary">
-                      {row.reason ?? (row.source_table === 'purchases' ? 'From a purchase' : '—')}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <ul className="mt-6 divide-y divide-border-strong overflow-hidden rounded-card border border-border-strong bg-surface lg:hidden">
+            {displayRows.map((row) => (
+              <li key={row.id} className="p-5">
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <p className="min-w-0 break-words text-body font-medium text-text-primary">
+                    {row.item}
+                  </p>
+                  <p className="shrink-0 text-body-sm tabular text-text-primary">{row.change}</p>
+                </div>
+                <p className="text-caption mt-1 text-text-secondary">
+                  {row.date} · {row.type}
+                </p>
+                <dl className="mt-3 grid grid-cols-2 gap-3">
+                  <div>
+                    <dt className="text-caption text-text-tertiary">Balance after</dt>
+                    <dd className="text-body-sm tabular text-text-primary">{row.balance}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-caption text-text-tertiary">Unit cost</dt>
+                    <dd className="text-body-sm tabular text-text-primary">{row.unitCost}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-caption text-text-tertiary">Value effect</dt>
+                    <dd className={`text-body-sm tabular ${row.effectTone}`}>{row.effect}</dd>
+                  </div>
+                </dl>
+                {row.reason !== '—' ? (
+                  <p className="text-caption mt-3 text-text-secondary">Why: {row.reason}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          <div
+            role="region"
+            aria-label="Inventory movements table"
+            tabIndex={0}
+            className="mt-6 hidden overflow-x-auto rounded-card border border-border-strong bg-surface lg:block"
+          >
+            <table className="w-full min-w-[40rem] text-left">
+              <thead>
+                <tr className="bg-surface-sunken">
+                  {[
+                    'Date',
+                    'Item',
+                    'Type',
+                    'Change',
+                    'Balance after',
+                    'Unit cost',
+                    'Value effect',
+                    'Why',
+                  ].map((h) => (
+                    <th key={h} scope="col" className="text-micro px-5 py-3 text-text-tertiary">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayRows.map((row) => {
+                  return (
+                    <tr key={row.id} className="border-t border-border-strong">
+                      <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
+                        {row.date}
+                      </td>
+                      <td className="text-body-sm px-5 py-3 text-text-primary">{row.item}</td>
+                      <td className="text-body-sm px-5 py-3 text-text-secondary">{row.type}</td>
+                      <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
+                        {row.change}
+                      </td>
+                      <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
+                        {row.balance}
+                      </td>
+                      <td className="text-body-sm tabular px-5 py-3 text-text-secondary">
+                        {row.unitCost}
+                      </td>
+                      <td className={`text-body-sm tabular px-5 py-3 ${row.effectTone}`}>
+                        {row.effect}
+                      </td>
+                      <td className="text-caption px-5 py-3 text-text-tertiary">{row.reason}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <p className="text-caption mt-4 text-text-tertiary">

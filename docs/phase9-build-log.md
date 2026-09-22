@@ -704,3 +704,11 @@ The earlier S14 note called S9's phone criterion done because the 390px picker w
 This is an automated browser measurement, not a person's entry time. **S9 remains four of five** until a person runs the same task with a stopwatch on a phone or a 390px viewport. The handoff records the exact task. The live test used a Webpack production build because this sandbox denied Turbopack's local worker port; `COSTED_E2E_WEBPACK=1` makes that fallback explicit while CI continues to test the default build.
 
 The complete 62-check production browser suite then passed in **2.5 minutes** with both throwaway accounts in one run. `/setup`, all other route variants, the concurrency check, the keyboard flows and the 390px checks passed together. The scripted sale in that run took **0.57 seconds** from first edit through save.
+
+### Responsive route audit and Sale detail, 22 September 2026
+
+The release audit now exercises the fourteen Tier-1 screens at both 390px and 768px. Its first run found four `scrollable-region-focusable` axe violations: Inventory Movements and Sales each had a sideways table at both widths that keyboard users could not focus. These were accessibility failures, not document overflow. Both lists now render readable cards below `lg` and a labeled, focusable table region at desktop width. The four failing checks and both desktop route audits passed after the change; rendered phone screenshots were inspected.
+
+The route inventory named Sale detail, but `/sales/[id]` was absent. The route now reads org-scoped, persisted sale amounts as text and displays the saved revenue, COGS, gross and contribution values, fees, status, notes and lines. It does not recalculate historical cost from today's stock. A live browser check followed the Sales list link, verified the saved ₱120 revenue, ₱80 COGS and ₱40 contribution, and reached the breakdown at 390px. Rendered desktop and phone screenshots were inspected.
+
+The complete production browser suite then passed **92/92 in 3.2 minutes** with both throwaway accounts: 54 rendered route audits, 28 Tier-1 width audits and the remaining flows. The scripted phone sale took **0.79 seconds** in that run. Typecheck, lint, formatting and 299 unit/database tests passed. **S9 remains four of five** until a person reports the timed phone entry.

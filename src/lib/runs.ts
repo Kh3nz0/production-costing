@@ -194,6 +194,56 @@ export async function listSales(orgId: string): Promise<SaleListRow[]> {
   return (data ?? []) as unknown as SaleListRow[];
 }
 
+export interface SaleDetailLine {
+  id: string;
+  quantity: string;
+  unit_price_cents: string;
+  line_discount_cents: string;
+  unit_cogs: string | null;
+  line_cogs_cents: string | null;
+  production_run_id: string | null;
+  item: { name: string; base_unit: { code: string } | null } | null;
+}
+
+export interface SaleDetailRecord {
+  id: string;
+  sale_date: string;
+  reference_no: string | null;
+  customer_name: string | null;
+  channel: { name: string } | null;
+  payment_status: string;
+  fulfilment_status: string;
+  cost_source: string;
+  notes: string | null;
+  revenue_cents: string;
+  cogs_cents: string | null;
+  gross_profit_cents: string | null;
+  net_revenue_cents: string;
+  contribution_profit_cents: string | null;
+  commission_fee_cents: string;
+  payment_fee_cents: string;
+  fixed_fee_cents: string;
+  other_costs_cents: string;
+  shipping_charged_cents: string;
+  shipping_cost_cents: string;
+  lines: SaleDetailLine[];
+}
+
+/** Read the amounts saved with the sale, never today's stock cost or fee rates. */
+export async function getSale(id: string, orgId: string): Promise<SaleDetailRecord | null> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from('sales')
+    .select(
+      'id,sale_date,reference_no,customer_name,payment_status,fulfilment_status,cost_source,notes,revenue_cents::text,cogs_cents::text,gross_profit_cents::text,net_revenue_cents::text,contribution_profit_cents::text,commission_fee_cents::text,payment_fee_cents::text,fixed_fee_cents::text,other_costs_cents::text,shipping_charged_cents::text,shipping_cost_cents::text,channel:sales_channels!sales_org_id_channel_id_fkey(name),lines:sale_lines(id,quantity::text,unit_price_cents::text,line_discount_cents::text,unit_cogs::text,line_cogs_cents::text,production_run_id,item:items!sale_lines_org_id_item_id_fkey(name,base_unit:units!items_base_unit_id_fkey(code)))',
+    )
+    .eq('org_id', orgId)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data ?? null) as unknown as SaleDetailRecord | null;
+}
+
 export interface SellableItem {
   id: string;
   name: string;

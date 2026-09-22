@@ -7,6 +7,8 @@
  * goes through the same row level security the app does — this is the account's
  * own data, written as the account.
  */
+import { toDecimal } from '../src/lib/decimal';
+
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -15,6 +17,7 @@ export interface SeededRoutes {
   productId: string;
   purchaseId: string;
   runId: string;
+  saleId: string;
 }
 
 async function api(path: string, token: string, init: RequestInit = {}): Promise<unknown> {
@@ -68,9 +71,9 @@ export async function seed(email: string, password: string): Promise<SeededRoute
         }).then((r) => r.json())) as string);
 
   const existing = (await api(
-    `items?select=id,name&org_id=eq.${orgId}&item_type=eq.finished_product`,
+    `items?select=id,name,qty_on_hand::text&org_id=eq.${orgId}&item_type=eq.finished_product`,
     token,
-  )) as { id: string; name: string }[];
+  )) as { id: string; name: string; qty_on_hand: string }[];
 
   const units = (await api('units?select=id,code&code=eq.pc&limit=1', token)) as {
     id: string;
@@ -78,7 +81,8 @@ export async function seed(email: string, password: string): Promise<SeededRoute
   }[];
   const piece = units[0]!.id;
 
-  let widget = existing.find((item) => item.name === 'End-to-end widget')?.id;
+  const existingWidget = existing.find((item) => item.name === 'End-to-end widget');
+  let widget = existingWidget?.id;
   if (widget === undefined) {
     const item = (await api('items', token, {
       method: 'POST',
@@ -96,6 +100,18 @@ export async function seed(email: string, password: string): Promise<SeededRoute
     await api('rpc/record_opening_balance', token, {
       method: 'POST',
       body: JSON.stringify({ p_item_id: widget, p_qty: 50, p_unit_cost: 80 }),
+    });
+  } else if (existingWidget && toDecimal(existingWidget.qty_on_hand).lt('10')) {
+    // The keyboard and phone checks sell this item. Keep their shared fixture
+    // usable after repeated live runs, without touching another organisation.
+    await api('rpc/adjust_stock', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        p_item_id: widget,
+        p_new_qty: '50',
+        p_movement_type: 'adjustment',
+        p_reason: 'Restore throwaway browser-test stock',
+      }),
     });
   }
 
@@ -215,5 +231,26 @@ export async function seed(email: string, password: string): Promise<SeededRoute
       }),
     })) as string);
 
-  return { itemId: widget, productId: product, purchaseId, runId };
+  const routeSales = (await api(
+    `sales?select=id&org_id=eq.${orgId}&reference_no=eq.E2E-ROUTE-SALE&limit=1`,
+    token,
+  )) as { id: string }[];
+  const saleId =
+    routeSales[0]?.id ??
+    ((await api('rpc/record_sale', token, {
+      method: 'POST',
+      body: JSON.stringify({
+        p_sale: {
+          org_id: orgId,
+          reference_no: 'E2E-ROUTE-SALE',
+          payment_status: 'paid',
+          fulfilment_status: 'fulfilled',
+        },
+        p_lines: [
+          { item_id: widget, quantity: '1', unit_price_cents: '12000', line_discount_cents: '0' },
+        ],
+      }),
+    })) as string);
+
+  return { itemId: widget, productId: product, purchaseId, runId, saleId };
 }
