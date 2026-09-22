@@ -1,6 +1,6 @@
 # Handoff to another agent
 
-Rewritten 21 September 2026, with every stage built. Read this, then `phase9-build-log.md` for what each stage actually did and `phase7-status-and-qa.md` for every defect and how it was found.
+Updated 22 September 2026. Read this, then `phase9-build-log.md` for what each stage actually did and `phase7-status-and-qa.md` for every defect and how it was found.
 
 ## What this is
 
@@ -12,7 +12,7 @@ The owner is Khenzo Bacani. He is a designer who builds, rebuilding frontend kno
 
 These came from the owner and are not yours to relax.
 
-- **A stage is done when its "done when" is observably true**, not when the code looks finished. Report partial completion as partial — this project has three stages recorded as "n of m" because they are.
+- **A stage is done when its "done when" is observably true**, not when the code looks finished. Report partial completion as partial.
 - **The worked examples in `phase3-calculations.md` are the test fixtures.** If an implementation disagrees with one, the implementation is wrong until proven otherwise.
 - **Do not invent business figures**, and do not invent a design token that is not in Figma.
 - **Never say "best practice".** Give the concrete consequence.
@@ -22,39 +22,40 @@ These came from the owner and are not yours to relax.
 
 ## State
 
-All fourteen stages are built. **297 tests pass.** Migrations `0001`–`0016` are applied to the live project.
+All fourteen stages are built. **299 database and costing tests pass.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed.
 
-| Stage          | State                                                                                                                                     |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| S0–S8, S10–S13 | Done and verified live                                                                                                                    |
-| S9             | Four criteria of five. The timed 20-second sale entry at 390px has not been run — it is now possible, and needs a person with a stopwatch |
-| S14            | Three of six. Zero axe violations, keyboard-only completion and a `pg_dump` restore all need tooling this machine cannot run              |
+| Stage          | State                                                                                                                                                                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S0–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                             |
+| S9             | Four criteria of five. A scripted 390px sale saved in 0.93, 0.48 and 0.48 seconds, measured from first edit through the saved page. The person-timed entry criterion still needs a human run.                                                                                      |
+| S14            | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 53 rendered route variants passed axe across two accounts. The route audits cover their seeded states, not every possible state or width. |
 
-**Open, with one shared fix.** Three S14 criteria, the `receive_purchase` concurrency proof that has been open since S3, and Playwright all need **Node 20.19.x** — a patch move inside the same LTS line as the installed 20.11 — plus the Supabase CLI for a local Postgres with real connections. Recommend it between stages; it needs the owner's password.
+**Next acceptance check.** On a real phone or a 390px browser viewport, sign into the throwaway end-to-end account before starting the clock. Open `/sales/new`, then time from the first product choice until the Sales page confirms the save. Choose `End-to-end widget`, leave quantity at 1, enter ₱120 as unit price and save. Record the elapsed time and any hesitation or blocked touch target. The scripted timing is useful evidence about app response; it cannot establish how long a person takes.
 
-**Open, needing the owner.** Dark mode: the tokens are in the Figma file and _not_ in `globals.css`, and the README forbids inventing one. It needs a node-specific Figma URL to read them from.
+**Later design work.** Dark mode needs the Figma dark token values; do not invent them. Some native selects and empty states still predate the shared components, though the audited route states pass axe.
 
-**Open, small.** Seventeen raw `<select>` elements that predate the `Select` component, and `EmptyState` adopted on two screens of many.
+The full 62-check browser manifest passed in one live production run with both throwaway accounts, including `/setup`, concurrent receipt, keyboard purchase/run/sale, and a 0.57-second scripted 390px sale. The timed sale check also passed three earlier repetitions.
 
 ## How to run anything
 
-**`pnpm` is not installed.** Every command goes through npx:
+**`pnpm` is not installed.** Use the pinned Node and invoke pnpm through npx:
 
 ```bash
 cd /Users/khenzobacani/Desktop/claude/production-costing
-npx --yes pnpm@9.15.9 test        # 297 tests, PGlite, no Docker or network
+nvm use
+npx --yes pnpm@9.15.9 test        # 299 tests, PGlite, no Docker or network
 npx --yes pnpm@9.15.9 typecheck
 npx --yes pnpm@9.15.9 lint
-npx --yes pnpm@9.15.9 next build --webpack
+npx --yes pnpm@9.15.9 build
 ```
 
-The plain `next build` is blocked here by a Turbopack port-binding error; `--webpack` works.
+Turbopack builds in hosted CI. Some sandboxes deny the local worker port it needs; use `next build --webpack` there. `COSTED_E2E_WEBPACK=1` selects that fallback for the browser server script.
 
-**Node is 20.11.1**, and that shaped the pins. vitest is held at 3.2.7 because vitest 4 needs `node:util.styleText` from 20.12; `vitest.config.mts` exports a plain object rather than calling `defineConfig`, because that import is the CJS entry and requiring vite's ESM build needs 20.19. Do not "upgrade" either without moving Node first.
+**Node is pinned to 20.20.2** in `.nvmrc`. The earlier 20.11.1 constraint no longer applies. Vitest remains at 3.2.7; changing it has not been part of the release gate.
 
 ## The migration loop, which needs the owner
 
-You cannot apply migrations: no Docker, no Supabase CLI, no psql, and the anon key cannot run DDL.
+The publishable anon key cannot run DDL. No migration after `0017` is pending.
 
 1. Write `supabase/migrations/00NN_name.sql`.
 2. Prove it with the PGlite tests, which run the migration files verbatim.
@@ -102,8 +103,8 @@ Every one of these is a defect that actually happened.
 
 | What                                      | Where                                         |
 | ----------------------------------------- | --------------------------------------------- |
-| Every decision and why                    | `docs/decision-log.md` — D-001 to D-130       |
-| Every defect and how it was found         | `docs/phase7-status-and-qa.md` — F-01 to F-78 |
+| Every decision and why                    | `docs/decision-log.md` — D-001 to D-131       |
+| Every defect and how it was found         | `docs/phase7-status-and-qa.md` — F-01 to F-86 |
 | What each stage did                       | `docs/phase9-build-log.md`                    |
 | Every formula with a worked example       | `docs/phase3-calculations.md`                 |
 | Token map, component map, route inventory | `docs/phase8-handoff.md`                      |

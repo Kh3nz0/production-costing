@@ -179,4 +179,31 @@ test.describe('the sale form on a phone', () => {
     );
     expect(overflow, 'the page scrolls sideways at 390px').toBeLessThanOrEqual(1);
   });
+
+  test('S9: a scripted sale is saved within 20 seconds at 390px', async ({ page }) => {
+    await seed(email!, password!);
+    await signIn(page, email!, password!);
+    await openRoute(page, '/sales/new');
+
+    // Measure the ready form, the three required edits, and the server save.
+    // Sign-in and fixture creation happen before the clock starts. This is a
+    // browser timing check; a person's timed entry still needs its own run.
+    const started = performance.now();
+    await page.getByLabel('Product').first().selectOption({ label: 'End-to-end widget' });
+    await page
+      .getByLabel(/^quantity$/i)
+      .first()
+      .fill('1');
+    await page
+      .getByLabel(/unit price/i)
+      .first()
+      .fill('120');
+    await page.getByRole('button', { name: 'Save sale' }).click();
+    await page.waitForURL('**/sales');
+    await expect(page.getByRole('heading', { name: 'Sales' })).toBeVisible();
+
+    const elapsedMs = performance.now() - started;
+    console.log(`390px sale saved in ${(elapsedMs / 1000).toFixed(2)} seconds`);
+    expect(elapsedMs, 'sale entry and save exceeded 20 seconds at 390px').toBeLessThan(20_000);
+  });
 });

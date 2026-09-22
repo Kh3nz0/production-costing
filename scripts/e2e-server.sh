@@ -36,5 +36,10 @@ fi
 echo "$$" > "$PID_FILE"
 trap release_lock EXIT INT TERM
 
-./node_modules/.bin/next build
+if [[ "${COSTED_E2E_WEBPACK:-}" == "1" ]]; then
+  # Turbopack's CSS worker needs a local port that some sandboxes deny.
+  ./node_modules/.bin/next build --webpack
+else
+  ./node_modules/.bin/next build
+fi
 ./node_modules/.bin/next start -p 3100
