@@ -7,6 +7,11 @@ export { RECOVERY_COOKIE };
 
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
+
+  // The callback must exchange its PKCE code before an old session is
+  // refreshed. A failed refresh signs out and removes every pending verifier.
+  if (pathname === '/auth/callback') return response;
 
   const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
     cookies: {
@@ -31,7 +36,6 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const inRecovery = request.cookies.get(RECOVERY_COOKIE)?.value === '1';
 
   // A recovery link is a real sign-in: it creates a session. Without this check

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
   const type = searchParams.get('type');
-  const errorDescription = searchParams.get('error_description');
+  const flowId = searchParams.get('sb_flow_id');
   const isRecovery = type === 'recovery';
 
   // An expired link arrives with an error and no code. Send it to the reset
@@ -23,16 +23,29 @@ export async function GET(request: NextRequest) {
   // left guessing why nothing happened.
   if (code === null) {
     const url = new URL(isRecovery ? '/reset-password' : '/sign-in', origin);
-    url.searchParams.set('error', errorDescription ?? 'link_invalid');
+    url.searchParams.set(
+      'error',
+      searchParams.get('error_code') === 'otp_expired' ? 'link_expired' : 'link_invalid',
+    );
     return NextResponse.redirect(url);
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error } = await supabase.auth.exchangeCodeForSession(
+    code,
+    flowId ? { flowId } : undefined,
+  );
 
   if (error) {
     const url = new URL(isRecovery ? '/reset-password' : '/sign-in', origin);
-    url.searchParams.set('error', 'link_expired');
+    // A code-verifier failure is not proof that the email link expired.
+    const reason =
+      error.code === 'pkce_code_verifier_not_found'
+        ? 'browser_mismatch'
+        : error.code === 'otp_expired'
+          ? 'link_expired'
+          : 'link_invalid';
+    url.searchParams.set('error', reason);
     return NextResponse.redirect(url);
   }
 

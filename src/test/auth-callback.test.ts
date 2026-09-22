@@ -26,7 +26,7 @@ describe('auth callback', () => {
 
     const response = await GET(request('type=recovery&code=valid'));
 
-    expect(exchangeCodeForSession).toHaveBeenCalledWith('valid');
+    expect(exchangeCodeForSession).toHaveBeenCalledWith('valid', undefined);
     expect(response.headers.get('location')).toBe('http://localhost:3000/reset-password');
     expect(response.cookies.get(RECOVERY_COOKIE)).toMatchObject({
       value: '1',
@@ -45,8 +45,23 @@ describe('auth callback', () => {
     expect(response.cookies.get(RECOVERY_COOKIE)).toBeUndefined();
   });
 
-  it('shows the reset screen for an expired recovery code', async () => {
-    exchangeCodeForSession.mockResolvedValue({ error: new Error('expired') });
+  it('uses the verifier associated with the recovery email when several are pending', async () => {
+    exchangeCodeForSession.mockResolvedValue({ error: null });
+
+    const response = await GET(
+      request('type=recovery&code=valid&sb_flow_id=dcc61771dba5ba2427c52671a96b051d'),
+    );
+
+    expect(exchangeCodeForSession).toHaveBeenCalledWith('valid', {
+      flowId: 'dcc61771dba5ba2427c52671a96b051d',
+    });
+    expect(response.headers.get('location')).toBe('http://localhost:3000/reset-password');
+  });
+
+  it('shows the expired message only for an expired code', async () => {
+    exchangeCodeForSession.mockResolvedValue({
+      error: Object.assign(new Error('expired'), { code: 'otp_expired' }),
+    });
 
     const response = await GET(request('type=recovery&code=expired'));
 
@@ -54,5 +69,27 @@ describe('auth callback', () => {
       'http://localhost:3000/reset-password?error=link_expired',
     );
     expect(response.cookies.get(RECOVERY_COOKIE)).toBeUndefined();
+  });
+
+  it('identifies a missing verifier without calling a fresh link expired', async () => {
+    exchangeCodeForSession.mockResolvedValue({
+      error: Object.assign(new Error('missing'), { code: 'pkce_code_verifier_not_found' }),
+    });
+    const response = await GET(request('type=recovery&code=valid'));
+
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/reset-password?error=browser_mismatch',
+    );
+  });
+
+  it('does not expose an upstream error description in the redirect', async () => {
+    const response = await GET(
+      request('type=recovery&error_description=secret&error_code=access_denied'),
+    );
+
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/reset-password?error=link_invalid',
+    );
+    expect(exchangeCodeForSession).not.toHaveBeenCalled();
   });
 });

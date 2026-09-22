@@ -10,15 +10,20 @@ export default async function ResetPasswordPage({
 }) {
   const { error } = await searchParams;
 
-  // An expired link lands here rather than on sign-in, so it can say what
-  // happened instead of leaving the user on a form that looks like it ignored
-  // them.
   if (error !== undefined) {
+    const expired = error === 'link_expired';
+    const browserMismatch = error === 'browser_mismatch';
     return (
       <>
-        <h1 className="text-title text-text-primary">That link has expired</h1>
+        <h1 className="text-title text-text-primary">
+          {expired ? 'That link has expired' : 'That link could not be verified'}
+        </h1>
         <p className="text-body mt-2 text-text-secondary">
-          Reset links are valid for one hour. Request a new one and it will arrive in a moment.
+          {expired
+            ? 'Reset links are valid for one hour. Request a new one and it will arrive in a moment.'
+            : browserMismatch
+              ? 'Request a new link and open it in the same browser where you requested it.'
+              : 'Request a new link and try again.'}
         </p>
         <ButtonLink href="/forgot-password">Send a new link</ButtonLink>
       </>

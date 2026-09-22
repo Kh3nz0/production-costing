@@ -22,18 +22,18 @@ These came from the owner and are not yours to relax.
 
 ## State
 
-All fourteen stages are built. **301 unit and database tests pass.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed.
+All fourteen stages are built. **306 unit and database tests pass locally.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed on the prior commit; CI has not yet run the recovery-link correction.
 
-| Stage              | State                                                                                                                                                                                                                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S0, S2–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                                   |
-| S1                 | Sign-in, tenant isolation and the absence of a sign-up page are proven. The valid recovery callback now has a behavior test, but the emailed link has not been opened. Live Auth now disables API signups (`disable_signup: true`). The emailed-link click remains outstanding.          |
-| S9                 | Five criteria of five under the specified Playwright timing method. A scripted 390px sale saved in 0.93, 0.48, 0.48 and 0.79 seconds, measured from first edit through the saved page. This measures the browser flow, not a person's entry speed.                                       |
-| S14                | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 54 rendered route variants passed axe across two accounts. Tier-1 screens also passed at 390px and 768px. The audits cover their seeded states. |
+| Stage              | State                                                                                                                                                                                                                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S0, S2–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                                                           |
+| S1                 | Sign-in, tenant isolation and the absence of a sign-up page are proven. Live Auth disables API signups (`disable_signup: true`). A live emailed recovery link failed code exchange and was mislabeled expired; the recovery flow has been corrected locally, but a fresh emailed-link click remains outstanding. |
+| S9                 | Five criteria of five under the specified Playwright timing method. A scripted 390px sale saved in 0.93, 0.48, 0.48 and 0.79 seconds, measured from first edit through the saved page. This measures the browser flow, not a person's entry speed.                                                               |
+| S14                | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 54 rendered route variants passed axe across two accounts. Tier-1 screens also passed at 390px and 768px. The audits cover their seeded states.                         |
 
 **Optional usability check.** On a real phone or a 390px browser viewport, time a person recording a sale and note any hesitation or blocked touch target. The written S9 test plan specifies “Playwright, measured” for the under-20-second check, and that check passed. Its scripted speed does not establish a person's entry time.
 
-**Remaining S1 check.** Run the app at `http://localhost:3000` (the configured site URL), request a password recovery email from `/forgot-password` for an existing account whose inbox you control, open its live link, and confirm it lands on `/reset-password` rather than `/dashboard`. Do not reset the throwaway browser-test account unless its credentials are updated afterward. The live `e2e/auth-config.spec.ts` check now passes with `disable_signup: true`.
+**Remaining S1 check.** With the corrected app running at `http://localhost:3000` (the configured site URL), request a new password recovery email from `/forgot-password` for an existing account whose inbox you control. Open the newest link in the same browser profile and confirm it lands on `/reset-password` with the new-password form, rather than `/dashboard` or an error page. Do not reset the throwaway browser-test account unless its credentials are updated afterward. The first live click landed on `?error=link_expired` after one minute; that label was misleading because every exchange error used it. The exact upstream error was not recorded. The callback now carries a per-request PKCE flow id, skips stale-session refresh before exchange and classifies failures. The live `e2e/auth-config.spec.ts` check passes with `disable_signup: true`.
 
 **Later design work.** Dark mode needs the Figma dark token values; do not invent them. Some native selects and empty states still predate the shared components, though the audited route states pass axe.
 
@@ -46,7 +46,7 @@ The earlier 92-check browser manifest passed in one live production run with bot
 ```bash
 cd /Users/khenzobacani/Desktop/claude/production-costing
 nvm use
-npx --yes pnpm@9.15.9 test        # 301 tests, PGlite, no Docker or network
+npx --yes pnpm@9.15.9 test        # 306 tests, PGlite, no Docker or network
 npx --yes pnpm@9.15.9 typecheck
 npx --yes pnpm@9.15.9 lint
 npx --yes pnpm@9.15.9 build

@@ -74,6 +74,12 @@ Heading: `That link has expired`
 Body: `Reset links are valid for one hour. Request a new one and it will arrive in a moment.`
 Button: `Send a new link`
 
+Unverified link:
+Heading: `That link could not be verified`
+Body: `Request a new link and try again.`
+Missing browser verifier body: `Request a new link and open it in the same browser where you requested it.`
+Button: `Send a new link`
+
 ---
 
 ## 3. Onboarding
