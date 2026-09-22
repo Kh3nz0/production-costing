@@ -22,7 +22,7 @@ These came from the owner and are not yours to relax.
 
 ## State
 
-All fourteen stages are built. **306 unit and database tests pass locally.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed on the prior commit; CI has not yet run the recovery-link correction.
+All fourteen stages are built. **306 unit and database tests pass locally.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, passed on recovery-fix commit `091203c`.
 
 | Stage              | State                                                                                                                                                                                                                                                                                                            |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
