@@ -112,10 +112,4 @@ describe('every route under the app group is behind the layout guard', () => {
     expect(layout).toMatch(/getUser\(\)/);
     expect(layout).toMatch(/redirect\('\/sign-in'\)/);
   });
-
-  it('marks the recovery session before letting it near the app', () => {
-    const callback = readFileSync(join(APP_DIR, 'auth', 'callback', 'route.ts'), 'utf8');
-    expect(callback).toMatch(/RECOVERY_COOKIE/);
-    expect(callback).toMatch(/reset-password/);
-  });
 });

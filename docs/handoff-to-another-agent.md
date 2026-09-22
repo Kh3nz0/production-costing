@@ -22,12 +22,12 @@ These came from the owner and are not yours to relax.
 
 ## State
 
-All fourteen stages are built. **299 database and costing tests pass.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed.
+All fourteen stages are built. **301 unit and database tests pass.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, have passed.
 
 | Stage              | State                                                                                                                                                                                                                                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | S0, S2–S8, S10–S13 | Done and verified live                                                                                                                                                                                                                                                                   |
-| S1                 | Sign-in, tenant isolation and the absence of a sign-up page are proven. Live Auth still allows API signups (`disable_signup: false`), and the emailed recovery link has not been opened. Both checks remain outstanding.                                                                 |
+| S1                 | Sign-in, tenant isolation and the absence of a sign-up page are proven. The valid recovery callback now has a behavior test, but the emailed link has not been opened. Live Auth still allows API signups (`disable_signup: false`). Both live checks remain outstanding.                |
 | S9                 | Five criteria of five under the specified Playwright timing method. A scripted 390px sale saved in 0.93, 0.48, 0.48 and 0.79 seconds, measured from first edit through the saved page. This measures the browser flow, not a person's entry speed.                                       |
 | S14                | Six criteria of six. The dump/restore rehearsal passed in CI; live concurrent receipts produced one movement; keyboard flows passed; all 54 rendered route variants passed axe across two accounts. Tier-1 screens also passed at 390px and 768px. The audits cover their seeded states. |
 
@@ -46,7 +46,7 @@ The earlier 92-check browser manifest passed in one live production run with bot
 ```bash
 cd /Users/khenzobacani/Desktop/claude/production-costing
 nvm use
-npx --yes pnpm@9.15.9 test        # 299 tests, PGlite, no Docker or network
+npx --yes pnpm@9.15.9 test        # 301 tests, PGlite, no Docker or network
 npx --yes pnpm@9.15.9 typecheck
 npx --yes pnpm@9.15.9 lint
 npx --yes pnpm@9.15.9 build
