@@ -39,7 +39,7 @@ The upgrade also freed the standard **Turbopack build**: `pnpm build` works. It 
 
 The RLS tests do not need any of that. `src/test/pg.ts` runs the migrations against **PGlite**, which is PostgreSQL compiled to WebAssembly, so the policies are executed by a real Postgres with no Docker and no network. What it does not cover is stated in that file: Supabase's Auth service and PostgREST are not present, so the tests prove the database refuses the rows, not that the HTTP layer in front of it does.
 
-Before release, run `pnpm e2e` with the throwaway browser-test credentials described below. The authenticated browser checks skip when their account is missing. The suite also checks that live Supabase Auth disables public account creation; this currently fails until **Allow new users to sign up** is turned off in the project dashboard. The CI workflow runs a PostgreSQL dump and restore rehearsal on each push or pull request. The live emailed password-recovery callback still needs a one-time check with an inbox you control.
+Before release, run `pnpm e2e` with the throwaway browser-test credentials described below. The authenticated browser checks skip when their account is missing. The suite also checks that live Supabase Auth disables public account creation; this passed after **Allow new users to sign up** was turned off in the project dashboard. The CI workflow runs a PostgreSQL dump and restore rehearsal on each push or pull request. The live emailed password-recovery callback still needs a one-time check with an inbox you control.
 
 ## Where the money rules live
 
