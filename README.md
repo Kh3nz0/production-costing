@@ -43,29 +43,29 @@ The complete production browser suite has passed with both throwaway accounts. T
 
 ## Deploying to Vercel
 
-The repository has no production deployment recorded yet. The app needs no custom Vercel build configuration; import `Kh3nz0/production-costing` and use `main` as the production branch.
+Production is deployed from `main` at **https://costed-phi.vercel.app** in the Vercel project `kh3nz01/costed`. The app needs no custom Vercel build configuration.
 
 In the Vercel project:
 
 1. Enable access to **System Environment Variables**. Recovery links use `VERCEL_URL` when a preview does not have an explicit site URL.
-2. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to Production and Preview. Both values come from the Supabase project Connect dialog. A publishable key is designed to ship in browser code; never put a secret or service-role key in a `NEXT_PUBLIC_` variable.
-3. Add `NEXT_PUBLIC_SITE_URL=https://your-production-domain.example` to Production only. Preview deployments fall back to their generated Vercel URL.
+2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for Production and Preview. Both values come from the Supabase project Connect dialog. A publishable key is designed to ship in browser code; never put a secret or service-role key in a `NEXT_PUBLIC_` variable.
+3. Set `NEXT_PUBLIC_SITE_URL=https://costed-phi.vercel.app` for Production only. Preview deployments fall back to their generated Vercel URL.
 4. Deploy `main`. Environment changes apply only to new deployments.
 
-Then update Supabase **Authentication → URL Configuration**:
+Supabase **Authentication → URL Configuration** is versioned in [`supabase/config.toml`](supabase/config.toml):
 
-- **Site URL:** the exact production origin.
-- **Redirect URLs:** the production callback (`https://your-production-domain.example/auth/callback*`), local development (`http://localhost:3000/**`), and the Vercel preview pattern (`https://*-<team-or-account-slug>.vercel.app/**`). The wildcard on the production callback carries the recovery flow id.
+- **Site URL:** `https://costed-phi.vercel.app`.
+- **Redirect URLs:** the exact local and production callbacks plus the Vercel preview pattern `https://*-kh3nz01.vercel.app/auth/callback`.
 
-After those settings are saved and a new deployment is ready, run the existing browser suite against it:
+For a full production regression run:
 
 ```bash
-E2E_BASE_URL=https://your-production-domain.example \
+E2E_BASE_URL=https://costed-phi.vercel.app \
 E2E_EMAIL=... E2E_PASSWORD=... \
 E2E_SETUP_EMAIL=... E2E_SETUP_PASSWORD=... pnpm e2e
 ```
 
-Finally, request one password-recovery email from the deployed site and confirm its link returns to the deployed `/reset-password` form.
+After changing the production domain or Auth settings, request one password-recovery email and confirm its link returns to the deployed `/reset-password` form.
 
 ## Where the money rules live
 
