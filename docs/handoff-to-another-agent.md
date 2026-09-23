@@ -22,7 +22,7 @@ These came from the owner and are not yours to relax.
 
 ## State
 
-All fourteen stages are complete. **306 unit and database tests pass locally.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, passed on recovery-fix commit `091203c`.
+All fourteen stages are complete. **309 unit and database tests pass locally.** Migrations `0001`–`0017` are applied to the live project. Both hosted CI jobs, verify and PostgreSQL restore rehearsal, passed on completion commit `9643f9d`.
 
 | Stage              | State                                                                                                                                                                                                                                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -37,6 +37,8 @@ All fourteen stages are complete. **306 unit and database tests pass locally.** 
 
 **Later design work.** Dark mode needs the Figma dark token values; do not invent them. Some native selects and empty states still predate the shared components, though the audited route states pass axe.
 
+**Deployment is the next external step.** GitHub has no deployment record and no repository homepage URL. The Vercel and Supabase configuration is documented in `README.md`. The GitHub repository is currently public; decide whether its source should remain public before connecting production hosting.
+
 The earlier 92-check browser manifest passed in one live production run with both throwaway accounts, including `/setup`, concurrent receipt, keyboard purchase/run/sale, 28 Tier-1 width audits at 390px and 768px, saved Sale detail, and a 0.79-second scripted 390px sale. The timed sale check also passed three earlier repetitions. The 93-check production browser suite passed in one live run after the setting changed to `disable_signup: true`; the scripted 390px sale saved in 0.44 seconds.
 
 ## How to run anything
@@ -46,7 +48,7 @@ The earlier 92-check browser manifest passed in one live production run with bot
 ```bash
 cd /Users/khenzobacani/Desktop/claude/production-costing
 nvm use
-npx --yes pnpm@9.15.9 test        # 306 tests, PGlite, no Docker or network
+npx --yes pnpm@9.15.9 test        # 309 tests, PGlite, no Docker or network
 npx --yes pnpm@9.15.9 typecheck
 npx --yes pnpm@9.15.9 lint
 npx --yes pnpm@9.15.9 build

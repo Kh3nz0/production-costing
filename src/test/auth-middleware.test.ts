@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { updateSession } from '@/lib/supabase/middleware';
 
 vi.mock('@/lib/env', () => ({
-  env: { supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: 'test-key' },
+  env: { supabaseUrl: 'https://example.supabase.co', supabasePublishableKey: 'test-key' },
 }));
 vi.mock('@supabase/ssr', () => ({ createServerClient: vi.fn() }));
 

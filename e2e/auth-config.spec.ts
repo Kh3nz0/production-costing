@@ -2,11 +2,15 @@ import { expect, test } from '@playwright/test';
 
 test('Supabase Auth has public signups disabled', async ({ request }) => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  test.skip(!url || !anon, 'Set the Supabase URL and publishable key to check live Auth settings.');
+  const publishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  test.skip(
+    !url || !publishableKey,
+    'Set the Supabase URL and publishable key to check live Auth settings.',
+  );
 
   const response = await request.get(`${url}/auth/v1/settings`, {
-    headers: { apikey: anon! },
+    headers: { apikey: publishableKey! },
   });
   expect(response.ok(), `Auth settings returned HTTP ${response.status()}`).toBe(true);
 

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { RECOVERY_COOKIE, safeRedirectPath } from '@/lib/auth-routes';
+import { siteUrl } from '@/lib/site-url';
 
 export interface FormState {
   error?: string;
@@ -60,9 +61,8 @@ export async function requestPasswordReset(
   }
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/callback?type=recovery`,
+    redirectTo: `${siteUrl()}/auth/callback?type=recovery`,
   });
 
   // Always the same answer, whether or not an account exists.

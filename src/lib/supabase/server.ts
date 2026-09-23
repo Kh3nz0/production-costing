@@ -14,7 +14,7 @@ import { env } from '@/lib/env';
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
+  return createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
     auth: {
       // Recovery emails can be requested more than once before any link is
       // opened. Carry the flow id back so each code uses its own PKCE verifier.

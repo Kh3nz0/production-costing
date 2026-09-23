@@ -35,11 +35,37 @@ The upgrade also freed the standard **Turbopack build**: `pnpm build` works. It 
 
 ## The database
 
-`supabase/migrations/` holds the schema. The app reads the project URL and publishable anon key from `.env.local` (see `.env.example`). Apply new migrations to the hosted project before using the features they add. The hosted project is current through `0017_deduplicate_overhead_import.sql` as of 21 September 2026.
+`supabase/migrations/` holds the schema. The app reads the project URL and publishable key from `.env.local` (see `.env.example`). The legacy anon-key variable remains accepted while existing environments migrate. Apply new migrations to the hosted project before using the features they add. The hosted project is current through `0017_deduplicate_overhead_import.sql` as of 21 September 2026.
 
 The RLS tests do not need any of that. `src/test/pg.ts` runs the migrations against **PGlite**, which is PostgreSQL compiled to WebAssembly, so the policies are executed by a real Postgres with no Docker and no network. What it does not cover is stated in that file: Supabase's Auth service and PostgREST are not present, so the tests prove the database refuses the rows, not that the HTTP layer in front of it does.
 
-Before release, run `pnpm e2e` with the throwaway browser-test credentials described below. The authenticated browser checks skip when their account is missing. The suite also checks that live Supabase Auth disables public account creation; this passed after **Allow new users to sign up** was turned off in the project dashboard. The CI workflow runs a PostgreSQL dump and restore rehearsal on each push or pull request. The live emailed password-recovery callback still needs a one-time check with an inbox you control.
+The complete production browser suite has passed with both throwaway accounts. The suite also checks that live Supabase Auth disables public account creation; this passed after **Allow new users to sign up** was turned off in the project dashboard. The CI workflow runs a PostgreSQL dump and restore rehearsal on each push or pull request. A live emailed password-recovery link also reached the new-password form, saved the new password and redirected to the dashboard.
+
+## Deploying to Vercel
+
+The repository has no production deployment recorded yet. The app needs no custom Vercel build configuration; import `Kh3nz0/production-costing` and use `main` as the production branch.
+
+In the Vercel project:
+
+1. Enable access to **System Environment Variables**. Recovery links use `VERCEL_URL` when a preview does not have an explicit site URL.
+2. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to Production and Preview. Both values come from the Supabase project Connect dialog. A publishable key is designed to ship in browser code; never put a secret or service-role key in a `NEXT_PUBLIC_` variable.
+3. Add `NEXT_PUBLIC_SITE_URL=https://your-production-domain.example` to Production only. Preview deployments fall back to their generated Vercel URL.
+4. Deploy `main`. Environment changes apply only to new deployments.
+
+Then update Supabase **Authentication → URL Configuration**:
+
+- **Site URL:** the exact production origin.
+- **Redirect URLs:** the production callback (`https://your-production-domain.example/auth/callback*`), local development (`http://localhost:3000/**`), and the Vercel preview pattern (`https://*-<team-or-account-slug>.vercel.app/**`). The wildcard on the production callback carries the recovery flow id.
+
+After those settings are saved and a new deployment is ready, run the existing browser suite against it:
+
+```bash
+E2E_BASE_URL=https://your-production-domain.example \
+E2E_EMAIL=... E2E_PASSWORD=... \
+E2E_SETUP_EMAIL=... E2E_SETUP_PASSWORD=... pnpm e2e
+```
+
+Finally, request one password-recovery email from the deployed site and confirm its link returns to the deployed `/reset-password` form.
 
 ## Where the money rules live
 

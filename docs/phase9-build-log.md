@@ -740,3 +740,11 @@ The pushed recovery-fix commit `091203c` passed both hosted CI jobs: verify and 
 A fresh recovery email was requested after the PKCE callback correction. Its live link opened the `Choose a new password` form in the same browser profile. The owner successfully changed the password, and the completed recovery redirected to the dashboard. This proves the delivered email, callback exchange, recovery-only routing, password update and final signed-in redirect as one live flow.
 
 **S1 is four of four. All fourteen stages are complete.**
+
+### Release-hosting preparation, 23 September 2026
+
+GitHub reports no deployment records and no repository homepage, so stage completion is not being presented as a production deployment. The approved hosting target is Vercel. Recovery URLs now prefer the explicit production `NEXT_PUBLIC_SITE_URL`, fall back to Vercel's generated deployment URL for previews, and use localhost for local development. The app accepts Supabase's current publishable-key variable while retaining the legacy anon-key variable for existing environments. The README records the Vercel environment variables, Supabase redirect allow list and post-deployment browser checks.
+
+The release-preparation gate passes: **309 tests**, typecheck, lint, formatting and a Webpack production build.
+
+The GitHub repository is public. Changing its visibility affects external access and integrations, so that remains an owner decision before production hosting is connected.

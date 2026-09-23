@@ -20,7 +20,8 @@ import { expect, test } from '@playwright/test';
  */
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const publishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
 
@@ -34,7 +35,7 @@ async function rest(session: Session, path: string, init: RequestInit = {}): Pro
   return fetch(`${url}/rest/v1/${path}`, {
     ...init,
     headers: {
-      apikey: anon,
+      apikey: publishableKey,
       Authorization: `Bearer ${session.token}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
@@ -60,7 +61,7 @@ test.describe('receive_purchase under concurrency', () => {
 
     const auth = await fetch(`${url}/auth/v1/token?grant_type=password`, {
       method: 'POST',
-      headers: { apikey: anon, 'Content-Type': 'application/json' },
+      headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
     const { access_token: token } = await json<{ access_token: string }>(auth, 'sign in');
@@ -136,7 +137,7 @@ test.describe('receive_purchase under concurrency', () => {
       fetch(`${url}/rest/v1/rpc/receive_purchase`, {
         method: 'POST',
         headers: {
-          apikey: anon,
+          apikey: publishableKey,
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },

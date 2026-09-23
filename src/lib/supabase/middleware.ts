@@ -13,7 +13,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   // refreshed. A failed refresh signs out and removes every pending verifier.
   if (pathname === '/auth/callback') return response;
 
-  const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
+  const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

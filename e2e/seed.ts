@@ -10,7 +10,8 @@
 import { toDecimal } from '../src/lib/decimal';
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const publishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export interface SeededRoutes {
   itemId: string;
@@ -24,7 +25,7 @@ async function api(path: string, token: string, init: RequestInit = {}): Promise
   const response = await fetch(`${url}/rest/v1/${path}`, {
     ...init,
     headers: {
-      apikey: anon,
+      apikey: publishableKey,
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
@@ -39,7 +40,7 @@ async function api(path: string, token: string, init: RequestInit = {}): Promise
 export async function seed(email: string, password: string): Promise<SeededRoutes> {
   const auth = await fetch(`${url}/auth/v1/token?grant_type=password`, {
     method: 'POST',
-    headers: { apikey: anon, 'Content-Type': 'application/json' },
+    headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
   if (!auth.ok) throw new Error(`sign in: ${auth.status} ${await auth.text()}`);
@@ -63,7 +64,7 @@ export async function seed(email: string, password: string): Promise<SeededRoute
       : ((await fetch(`${url}/rest/v1/rpc/create_organization`, {
           method: 'POST',
           headers: {
-            apikey: anon,
+            apikey: publishableKey,
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
